@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Ambulance</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>#map { height: 700px; }</style>
+</head>
+<body>
+    <h2>User Map - Tracking Driver</h2>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([0, 0], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    
+        var userMarker, driverMarker;
+    
+        var userIcon = L.icon({ iconUrl: "images/user.png", iconSize: [50, 50] });
+        var ambulanceIcon = L.icon({ iconUrl: "images/ambulance.png", iconSize: [50, 50] });
+    
+        function fetchLocations() {
+            fetch(`/get-locations?driverId=<%= driverId %>&userId=<%= userId %>`)
+                .then(response => response.json())
+                .then(data => {
+                    const { driver, user } = data;
+    
+                    // Update User Marker
+                    if (!userMarker) {
+                        userMarker = L.marker([user.lat, user.lng], { icon: userIcon }).addTo(map);
+                        map.setView([user.lat, user.lng], 15);
+                    } else {
+                        userMarker.setLatLng([user.lat, user.lng]);
+                    }
+    
+                    // Update Driver Marker
+                    if (!driverMarker) {
+                        driverMarker = L.marker([driver.lat, driver.lng], { icon: ambulanceIcon }).addTo(map);
+                    } else {
+                        driverMarker.setLatLng([driver.lat, driver.lng]);
+                    }
+                })
+                .catch(error => console.error("Error fetching locations:", error));
+        }
+    
+        setInterval(fetchLocations, 5000);
+        fetchLocations();
+    </script>
+    
+</body>
+</html>

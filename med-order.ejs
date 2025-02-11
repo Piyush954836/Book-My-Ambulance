@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Medicine - Book My Ambulance (BMA)</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+
+  <div class="bg-white shadow-lg rounded-lg w-full max-w-4xl px-6 py-8 sm:px-10 sm:py-12">
+    <h1 class="text-3xl sm:text-4xl font-bold text-center mb-6 sm:mb-8 text-blue-600">Order Medicine</h1>
+
+    <!-- Tabs to Switch Between Uploading Prescription or Call Request -->
+    <div class="flex flex-col sm:flex-row justify-center sm:justify-between mb-6 sm:mb-8">
+      <button id="upload-tab" class="w-full sm:w-1/2 text-center py-3 sm:py-4 text-xl sm:text-2xl font-bold border-b-4 border-blue-500 focus:outline-none">
+        Upload Prescription
+      </button>
+      <button id="call-tab" class="w-full sm:w-1/2 text-center py-3 sm:py-4 text-xl sm:text-2xl font-bold border-b-4 border-gray-200 focus:outline-none">
+        Request a Call
+      </button>
+    </div>
+
+    <!-- Upload Prescription Form -->
+    <div id="upload-form">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center text-gray-700">Upload Your Prescription</h2>
+      <form action="/upload-prescription" method="POST" enctype="multipart/form-data">
+        <div class="mb-4 sm:mb-6">
+          <label for="name" class="block mb-2 sm:mb-3 text-base sm:text-lg text-gray-600">Full Name</label>
+          <input type="text" name="name" id="name" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg text-base sm:text-lg" placeholder="Enter your full name" required>
+        </div>
+        <div class="mb-4 sm:mb-6">
+          <label for="contact" class="block mb-2 sm:mb-3 text-base sm:text-lg text-gray-600">Contact Number</label>
+          <input type="tel" name="contact" id="contact" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg text-base sm:text-lg" placeholder="Enter your contact number" required>
+        </div>
+        <div class="mb-4 sm:mb-6">
+          <label for="prescription" class="block mb-2 sm:mb-3 text-base sm:text-lg text-gray-600">Upload Prescription (PDF or Image)</label>
+          <input type="file" name="prescription" id="prescription" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg text-base sm:text-lg" accept="image/*,.pdf" required>
+        </div>
+        <button type="submit" class="w-full bg-green-500 text-white p-3 sm:p-4 rounded-lg text-lg sm:text-xl hover:bg-green-600">
+          Submit Prescription
+        </button>
+      </form>
+    </div>
+
+    <!-- Call Request Form (Initially Hidden) -->
+    <div id="call-form" class="hidden">
+      <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center text-gray-700">Request a Call to Order Medicine</h2>
+      <form action="/request-call" method="POST">
+        <div class="mb-4 sm:mb-6">
+          <label for="call-name" class="block mb-2 sm:mb-3 text-base sm:text-lg text-gray-600">Full Name</label>
+          <input type="text" name="name" id="call-name" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg text-base sm:text-lg" placeholder="Enter your full name" required>
+        </div>
+        <div class="mb-4 sm:mb-6">
+          <label for="call-contact" class="block mb-2 sm:mb-3 text-base sm:text-lg text-gray-600">Contact Number</label>
+          <input type="tel" name="contact" id="call-contact" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg text-base sm:text-lg" placeholder="Enter your contact number" required>
+        </div>
+        <div class="mb-4 sm:mb-6">
+          <label for="message" class="block mb-2 sm:mb-3 text-base sm:text-lg text-gray-600">Message (Optional)</label>
+          <textarea name="message" id="message" rows="4" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg text-base sm:text-lg" placeholder="Describe your medical needs or query"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-blue-500 text-white p-3 sm:p-4 rounded-lg text-lg sm:text-xl hover:bg-blue-600">
+          Request Call
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- Script to Toggle Between Upload Form and Call Form -->
+  <script>
+    const uploadTab = document.getElementById('upload-tab');
+    const callTab = document.getElementById('call-tab');
+    const uploadForm = document.getElementById('upload-form');
+    const callForm = document.getElementById('call-form');
+
+    uploadTab.addEventListener('click', () => {
+      uploadForm.classList.remove('hidden');
+      callForm.classList.add('hidden');
+      uploadTab.classList.add('border-blue-500');
+      callTab.classList.remove('border-blue-500');
+    });
+
+    callTab.addEventListener('click', () => {
+      callForm.classList.remove('hidden');
+      uploadForm.classList.add('hidden');
+      callTab.classList.add('border-blue-500');
+      uploadTab.classList.remove('border-blue-500');
+    });
+  </script>
+</body>
+</html>

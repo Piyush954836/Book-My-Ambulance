@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+
+<body class="bg-gray-100 p-5">
+
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-bold mb-4">Your Appointments</h2>
+
+    <table class="w-full border-collapse">
+      <tr class="bg-gray-200">
+        <th class="p-2">Doctor</th>
+        <th class="p-2">Time</th>
+        <th class="p-2">Date</th>
+        <th class="p-2">Status</th>
+      </tr>
+      <% if (appointments.length > 0) { %>
+        <% appointments.forEach(appointment => { %>
+          <tr class="border-b">
+            <td class="p-2">
+              <%= appointment.doctorId && appointment.doctorId.fullName ? appointment.doctorId.fullName : "Unknown Doctor" %>
+            </td>
+            <td class="p-2">
+              <%= appointment.time %>
+            </td>
+            <td class="p-2">
+              <%= appointment.date %>
+            </td>
+            <td class="p-2 status-cell" data-id="<%= appointment._id %>">
+              <span class="<%= appointment.status === 'Pending' ? 'text-yellow-500' : 
+                            appointment.status === 'Accepted' ? 'text-green-500' : 'text-red-500' %>">
+                <%= appointment.status %>
+              </span>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="4" class="text-center text-red-500 p-4">No Appointments Found</td>
+        </tr>
+      <% } %>
+    </table>
+  </div>
+
+  <script>
+    const socket = io();
+
+    // Listen for appointment status updates
+    socket.on("appointmentUpdated", ({ appointmentId, status }) => {
+      console.log(`Received update: ${appointmentId} -> ${status}`);  // Debugging log
+  
+      const appointmentElem = document.querySelector(`.status-cell[data-id="${appointmentId}"] span`);
+      if (appointmentElem) {
+          appointmentElem.textContent = status;
+          appointmentElem.className = status === "Accepted" ? "text-green-500" :
+              status === "Declined" ? "text-red-500" : "text-yellow-500";
+      }
+  });
+
+  socket.on("connect", () => {
+    console.log("Connected to server via Socket.io:", socket.id);
+});
+
+  </script>
+</body>
+
+</html>

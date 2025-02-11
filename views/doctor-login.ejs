@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login or Register - Book My Ambulance (BMA)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
+      <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
+
+    <!-- Container for Login/Register Form -->
+    <div class="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
+      <h2 class="text-center text-2xl font-semibold mb-4">Doctor Portal</h2>
+        <!-- Tabs -->
+        <div class="flex justify-between mb-6">
+            <button id="login-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-blue-500 focus:outline-none">
+                Login
+            </button>
+            <button id="register-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-gray-200 focus:outline-none">
+                Register
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-form">
+              <h2 class="text-3xl font-bold text-blue-600 mb-6">Doctor Login</h2>
+              <form action="/doctor/doctor-login" method="POST">
+                
+                <!-- Email -->
+                <div class="mb-4">
+                  <label for="login-email" class="block text-sm font-semibold mb-2">Email</label>
+                  <input type="email" id="login-email" name="email" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter your email" required>
+                </div>
+        
+                <!-- Password -->
+                <div class="mb-4">
+                  <label for="login-password" class="block text-sm font-semibold mb-2">Password</label>
+                  <input type="password" id="login-password" name="password" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter your password" required>
+                </div>
+        
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Login</button>
+        
+              </form>
+            <p class="text-center text-sm text-gray-500 mt-6">Don't have an account? <button id="switch-to-register" class="text-blue-500 hover:underline">Register here</button></p>
+        </div>
+
+        <!-- Register Form (Initially Hidden) -->
+        <div id="register-form" class="hidden">
+              <h2 class="text-3xl font-bold text-green-600 mb-6">Doctor Registration</h2>
+              <form action="/doctor/doctor-register" method="POST" enctype="multipart/form-data">
+                
+                <!-- Full Name -->
+                <div class="mb-4">
+                  <label for="full-name" class="block text-sm font-semibold mb-2">Full Name</label>
+                  <input type="text" id="full-name" name="fullName" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter your full name" required>
+                </div>
+        
+                <!-- Email -->
+                <div class="mb-4">
+                  <label for="email" class="block text-sm font-semibold mb-2">Email</label>
+                  <input type="email" id="email" name="email" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter your email" required>
+                </div>
+
+                <div class="mb-4">
+                  <label for="contact" class="block text-sm font-semibold mb-2">Contact</label>
+                  <input type="contact" id="contact" name="contact" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter Your Contact Number" required>
+                </div>
+
+                <div class="mb-4">
+                  <label for="hospital" class="block text-sm font-semibold mb-2">Hospital</label>
+                  <input type="hospital" id="hospital" name="hospital" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter your hospital or clinic" required>
+                </div>
+        
+                <!-- Password -->
+                <div class="mb-4">
+                  <label for="password" class="block text-sm font-semibold mb-2">Password</label>
+                  <input type="password" id="password" name="password" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Create a password" required>
+                </div>
+        
+                <!-- Doctor Category -->
+                <div class="mb-4">
+                  <label for="category" class="block text-sm font-semibold mb-2">Select Category</label>
+                  <select id="category" name="department" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                    <option value="dermatologist">Dermatologist</option>
+                    <option value="cardiologist">Cardiologist</option>
+                    <option value="neurologist">Neurologist</option>
+                    <option value="orthopedic">Orthopedic</option>
+                    <option value="pediatrician">Pediatrician</option>
+                    <option value="pediatrician">ENT Specialist</option>
+                    <!-- Add more categories as necessary -->
+                  </select>
+                </div>
+        
+                <!-- Profile Picture Upload -->
+                <div class="mb-6">
+                  <label for="profile-picture" class="block text-sm font-semibold mb-2">Profile Picture</label>
+                  <input type="file" id="profile-picture" name="profilePicture" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" required>
+                </div>
+        
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">Register</button>
+        
+              </form>
+            <p class="text-center text-sm text-gray-500 mt-6">Already have an account? <button id="switch-to-login" class="text-blue-500 hover:underline">Login here</button></p>
+        </div>
+    </div>
+
+    <!-- Script to Toggle Between Login and Register Forms -->
+    <script>
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+
+        loginTab.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginTab.classList.add('border-blue-500');
+            registerTab.classList.remove('border-blue-500');
+        });
+
+        registerTab.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            registerTab.classList.add('border-blue-500');
+            loginTab.classList.remove('border-blue-500');
+        });
+
+        switchToRegister.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            registerTab.classList.add('border-blue-500');
+            loginTab.classList.remove('border-blue-500');
+        });
+
+        switchToLogin.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginTab.classList.add('border-blue-500');
+            registerTab.classList.remove('border-blue-500');
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+          const flashContainer = document.getElementById('flashContainer');
+          const errorMessage = document.getElementById('errorMessage').textContent.trim();
+  
+          // Display error message if available
+          if (errorMessage) {
+              flashContainer.innerHTML = `
+                  <div class="fixed top-0 left-0 w-full bg-red-100 text-red-800 border border-red-300 text-center py-2 shadow-md transition-opacity duration-500">
+                      ${errorMessage}
+                  </div>
+              `;
+          }
+  
+          // Hide flash message after 3 seconds
+          setTimeout(() => {
+              flashContainer.innerHTML = '';
+          }, 3000);
+      });
+
+    </script>
+</body>
+</html>

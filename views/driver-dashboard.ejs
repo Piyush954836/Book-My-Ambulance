@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard - Book My Ambulance (BMA)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100">
+
+    <div id="flashMessage" class="fixed top-0 left-0 w-full text-center z-50 transition-opacity duration-500">
+        <% if (success_msg) { %>
+            <div class="bg-green-100 text-green-800 border border-green-300 py-2 shadow-md">
+                <%= success_msg %>
+            </div>
+            <% } %>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Dashboard Header -->
+        <header class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8">
+            <h1 class="text-3xl font-bold">Welcome, <%= driver.name %>!</h1>
+            <p class="text-lg">Your Driver Dashboard</p>
+        </header>
+
+        <!-- Driver Details Section -->
+        <div class="bg-white shadow-lg rounded-lg p-8 mb-8">
+            <h2 class="text-2xl font-semibold mb-6">Your Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <p class="text-lg text-gray-700"><strong>Email:</strong>
+                        <%= driver.email %>
+                    </p>
+                    <p class="text-lg text-gray-700"><strong>Contact Number:</strong>
+                        <%= driver.contactNumber %>
+                    </p>
+                    <p class="text-lg text-gray-700"><strong>Age:</strong>
+                        <%= driver.age %>
+                    </p>
+                </div>
+                <div>
+                    <p class="text-lg text-gray-700"><strong>Driving License:</strong></p>
+                    <div class="h-40 w-40 bg-gray-200 rounded-md">
+                        <% if (driver.drivingLicensePhoto && driver.drivingLicensePhoto.data) { %>
+                            <img src="data:<%= driver.drivingLicensePhoto.contentType %>;base64,<%= driver.drivingLicensePhoto.data.toString('base64') %>"
+                                alt="Driving License" class="object-cover w-full h-full rounded-md">
+                            <% } else { %>
+                                <p>No driving license uploaded</p>
+                                <% } %>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Toggle Button with data attribute for isActive status -->
+        <div class="text-center mb-8">
+            <button id="statusToggleButton"
+                class="py-2 px-4 rounded-lg shadow-md text-white transition-all duration-300 ease-in-out"
+                data-is-active="<%= driver.isActive %>" data-driver-id="<%= driver._id %>">
+            </button>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="text-center">
+            <a href="/logout" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700">Logout</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const button = document.getElementById("statusToggleButton");
+            const driverInfo = {
+                name: "<%= driver.name %>",
+                email: "<%= driver.email %>",
+                contactNumber: "<%= driver.contactNumber %>",
+                age: "<%= driver.age %>"
+            };
+            const driverId = button.getAttribute("data-driver-id");
+            let isActive = button.getAttribute("data-is-active") === "true";
+
+            function updateButton() {
+                button.textContent = isActive ? 'Deactivate' : 'Activate';
+                button.style.backgroundColor = isActive ? 'green' : 'gray';
+                button.style.color = 'white';
+            }
+
+            updateButton();
+
+            button.addEventListener("click", function () {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(position => {
+                        const locationData = {
+                            driverId,
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            isActive: !isActive,
+                            driverDetails: driverInfo // Embed driver details
+                        };
+
+                        button.textContent = isActive ? 'Activate' : 'Deactivate'; // Update immediately
+                        button.style.backgroundColor = isActive ? 'gray' : 'green';
+                        button.style.color = 'white';
+                        isActive = !isActive; // Toggle state immediately
+
+                        fetch('/driver/available-driver', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(locationData)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (!data.success) {
+                                    alert('Failed to update status.' + data.message);
+                                    isActive = !isActive; // Revert status if the request fails
+                                    updateButton();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                isActive = !isActive; // Revert status in case of error
+                                updateButton();
+                            });
+
+                    }, error => {
+                        alert('Unable to fetch location. Please enable location services.');
+                        console.error(error);
+                    });
+                } else {
+                    alert('Geolocation is not supported by this browser.');
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const flashMessage = document.getElementById('flashMessage');
+            if (flashMessage) {
+                setTimeout(() => {
+                    flashMessage.style.opacity = 0;
+                }, 3000); // Hide the flash message after 3 seconds
+            }
+        });
+
+        let driverId = driver._id; // Replace this dynamically in your frontend
+
+        function sendLiveLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    fetch("/driver/update-location", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            driverId: driverId,
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        })
+                    });
+                }, error => {
+                    console.error("Error getting location:", error);
+                });
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Update location every 10 seconds
+        setInterval(sendLiveLocation, 10000);
+        const socket = io(); // Connect to the WebSocket server
+
+        socket.on('updateDriverStatus', (data) => {
+            if (data.driverId === driverId) {
+                isActive = data.isActive;
+                updateButton();
+            }
+        });
+
+        button.addEventListener("click", function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const locationData = {
+                        driverId,
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        isActive: !isActive
+                    };
+
+                    socket.emit('driverStatusChange', locationData); // Send update via WebSockets
+                    fetch('/driver/available-driver', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(locationData)
+                    });
+                });
+            }
+        });
+
+
+
+    </script>
+
+
+</body>
+
+</html>

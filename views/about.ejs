@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Book My Ambulance (BMA)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo Section -->
+            <div class="flex items-center space-x-3">
+                <img src="/images/bma-logo.webp" alt="BMA Logo" class="h-8 w-8 md:h-10 md:w-10">
+                <a href="/" class="text-xl md:text-2xl font-bold text-gray-800">Book My Ambulance</a>
+            </div>
+            
+            <!-- Desktop Links -->
+            <div class="hidden md:flex space-x-8">
+                <a href="/" class="text-gray-800 hover:text-blue-500">Home</a>
+                <a href="/about" class="text-gray-800 hover:text-blue-500">About Us</a>
+                <a href="/safety" class="text-gray-800 hover:text-blue-500">Safety</a>
+                <a href="#contact" class="text-gray-800 hover:text-blue-500">Contact Us</a>
+                <% if (user) { %>
+                    <a href="/logout"
+                        class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600">Logout</a>
+                    <% } else { %>
+                        <button id="login-btn"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">
+                            Login / Signup
+                        </button>
+                        <% } %>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="menuToggle" class="text-gray-800 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white shadow-lg">
+            <a href="/" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Home</a>
+            <a href="/about" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">About Us</a>
+            <a href="/safety" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Safety</a>
+            <a href="#contact" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Contact Us</a>
+            <% if (user) { %>
+                <a href="/logout"
+                    class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600">Logout</a>
+                <% } else { %>
+                    <button id="login-btn"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">
+                        Login / Signup
+                    </button>
+                    <% } %>
+          </div>
+    </nav>
+
+    <!-- About Us Section -->
+    <section class="py-8 px-4 md:py-16 md:px-8 max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+            <!-- Content Left -->
+            <div class="md:w-1/2">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">About Us</h1>
+                <h2 class="text-2xl md:text-3xl font-semibold text-gray-700 mb-4">Who We Are</h2>
+                <p class="text-lg md:text-xl text-gray-600 mb-4">
+                    At <strong>Book My Ambulance (BMA)</strong>, we are dedicated to transforming emergency medical services by providing a quick and reliable way for patients to access the right ambulance, anytime, anywhere.
+                </p>
+                <p class="text-lg md:text-xl text-gray-600 mb-4">
+                    Our mission is simple: <strong>to save lives by simplifying access to emergency medical transportation.</strong>
+                </p>
+
+                <h2 class="text-2xl md:text-3xl font-semibold text-gray-700 mb-4">What We Do</h2>
+                <p class="text-lg md:text-xl text-gray-600 mb-4">
+                    BMA allows users to book ambulances based on the specific type of medical emergency. Whether you're looking for a specialized vehicle for a cardiac emergency, pediatric care, or any other medical department, our service ensures that you get the right ambulance with the right equipment and trained personnel.
+                </p>
+
+                <h2 class="text-2xl md:text-3xl font-semibold text-gray-700 mb-4">Why Choose Us</h2>
+                <ul class="text-lg md:text-xl list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>Specialized Care:</strong> We understand that not all emergencies are the same. That's why we connect you with ambulances based on the type of medical expertise required.</li>
+                    <li><strong>24/7 Availability:</strong> Our platform operates round-the-clock, ensuring that help is always just a click away.</li>
+                    <li><strong>Trained Professionals:</strong> Our ambulance partners are staffed with certified paramedics and drivers trained to handle a wide range of medical situations.</li>
+                    <li><strong>Safety First:</strong> We maintain the highest standards of hygiene and safety in all our ambulances, with strict adherence to medical protocols.</li>
+                </ul>
+            </div>
+
+            <!-- Image Right -->
+            <div class="md:w-1/2 flex flex-col gap-8">
+                <img src="/images/about.jpg" alt="About Us Image" class="rounded-lg shadow-lg w-full h-auto">
+                <img src="/images/about2.jpg" alt="About Us Image" class="rounded-lg shadow-lg w-full h-auto">
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-white py-4">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-center md:text-left space-y-2 md:space-y-0">
+            <p class="text-gray-700">© 2024 Book My Ambulance. All rights reserved.</p>
+            <div>
+                <a href="/terms" class="text-gray-700 hover:text-blue-600">Terms of Service</a> |
+                <a href="/privacy" class="text-gray-700 hover:text-blue-600">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle mobile menu
+        document.getElementById("menuToggle").addEventListener("click", function() {
+            const mobileMenu = document.getElementById("mobileMenu");
+            mobileMenu.classList.toggle("hidden");
+        });
+    </script>
+</body>
+</html>

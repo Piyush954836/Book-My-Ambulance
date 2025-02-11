@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login or Register - Book My Ambulance (BMA)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+
+    <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
+    <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
+    <!-- Container for Login/Register Form -->
+    <div class="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
+        <h2 class="text-center text-2xl font-semibold mb-4">User Portal</h2>
+        <!-- Tabs -->
+        <div class="flex justify-between mb-6">
+            <button id="login-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-blue-500 focus:outline-none" aria-selected="true">
+                Login
+            </button>
+            <button id="register-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-gray-200 focus:outline-none" aria-selected="false">
+                Register
+            </button>
+        </div>
+
+
+
+        <!-- Login Form -->
+        <div id="login-form">
+            <h2 class="text-2xl font-bold mb-6 text-center">Login to your account</h2>
+            <form action="/user/login" method="POST">
+                <div class="mb-4">
+                    <label for="login-email" class="block mb-2 text-sm text-gray-600">Email</label>
+                    <input type="email" name="email" id="login-email" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block mb-2 text-sm text-gray-600">Password</label>
+                    <input type="password" name="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">
+                    Login
+                </button>
+            </form>
+            <p class="text-center text-sm text-gray-500 mt-6">Don't have an account? <button id="switch-to-register" class="text-blue-500 hover:underline">Register here</button></p>
+        </div>
+
+        <!-- Register Form (Initially Hidden) -->
+        <div id="register-form" class="hidden">
+            <h2 class="text-2xl font-bold mb-6 text-center">Create a new account</h2>
+            <form action="/user/register" method="POST">
+                <div class="mb-4">
+                    <label for="register-name" class="block mb-2 text-sm text-gray-600">Full Name</label>
+                    <input type="text" name="name" id="register-name" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your full name" required>
+                </div>
+                <div class="mb-4">
+                    <label for="user-name" class="block mb-2 text-sm text-gray-600">User Name</label>
+                    <input type="text" name="username" id="user-name" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your user name" required>
+                </div>
+                <div class="mb-4">
+                    <label for="register-email" class="block mb-2 text-sm text-gray-600">Email</label>
+                    <input type="email" name="email" id="register-email" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-4">
+                    <label for="register-password" class="block mb-2 text-sm text-gray-600">Password</label>
+                    <input type="password" name="password" id="register-password" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Create a password" required>
+                </div>
+                <!-- Hidden Fields for Latitude and Longitude -->
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+
+                <button type="submit" class="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">
+                    Register
+                </button>
+            </form>
+            <p class="text-center text-sm text-gray-500 mt-6">Already have an account? <button id="switch-to-login" class="text-blue-500 hover:underline">Login here</button></p>
+        </div>
+    </div>
+
+    <!-- Script to Toggle Between Login and Register Forms and Capture Location -->
+    <script>
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+
+        loginTab.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginTab.classList.add('border-blue-500');
+            registerTab.classList.remove('border-blue-500');
+            loginTab.setAttribute('aria-selected', 'true');
+            registerTab.setAttribute('aria-selected', 'false');
+        });
+
+        registerTab.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            registerTab.classList.add('border-blue-500');
+            loginTab.classList.remove('border-blue-500');
+            registerTab.setAttribute('aria-selected', 'true');
+            loginTab.setAttribute('aria-selected', 'false');
+        });
+
+        switchToRegister.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            registerTab.classList.add('border-blue-500');
+            loginTab.classList.remove('border-blue-500');
+            registerTab.setAttribute('aria-selected', 'true');
+            loginTab.setAttribute('aria-selected', 'false');
+        });
+
+        switchToLogin.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            loginTab.classList.add('border-blue-500');
+            registerTab.classList.remove('border-blue-500');
+            loginTab.setAttribute('aria-selected', 'true');
+            registerTab.setAttribute('aria-selected', 'false');
+        });
+
+        // Capture user location and populate hidden fields
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+            });
+        } else {
+            console.log("Geolocation is not supported by this browser.");
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const flashContainer = document.getElementById('flashContainer');
+            const errorMessage = document.getElementById('errorMessage').textContent.trim();
+    
+            // Display error message if available
+            if (errorMessage) {
+                flashContainer.innerHTML = `
+                    <div class="fixed top-0 left-0 w-full bg-red-100 text-red-800 border border-red-300 text-center py-2 shadow-md transition-opacity duration-500">
+                        ${errorMessage}
+                    </div>
+                `;
+            }
+    
+            // Hide flash message after 3 seconds
+            setTimeout(() => {
+                flashContainer.innerHTML = '';
+            }, 3000);
+        });
+       
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Drivers - Book My Ambulance (BMA)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Page Header -->
+        <header class="bg-blue-600 text-white p-6 rounded-lg shadow-lg mb-8">
+            <h1 class="text-3xl font-bold">All Drivers</h1>
+            <p class="text-lg">List of all available drivers</p>
+        </header>
+
+        <!-- Driver List Section -->
+        <div class="bg-white shadow-lg rounded-lg p-6 space-y-6">
+            <% if (Array.isArray(drivers)) { %>
+                <% drivers.forEach(driver => { %>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold"><%= driver.name %></h2>
+                        <p class="text-gray-700"><strong>Email:</strong> <%= driver.email %></p>
+                        <p class="text-gray-700"><strong>Contact:</strong> <%= driver.contactNumber %></p>
+                        <p class="text-gray-700"><strong>Status:</strong> <%= driver.isActive ? 'Active' : 'Inactive' %></p>
+                        <a href="/driver/<%= driver._id %>" class="text-blue-600 hover:underline mt-2 block">View Details</a>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold"><%= drivers.name %></h2>
+                    <p class="text-gray-700"><strong>Email:</strong> <%= drivers.email %></p>
+                    <p class="text-gray-700"><strong>Contact:</strong> <%= drivers.contactNumber %></p>
+                    <p class="text-gray-700"><strong>Status:</strong> <%= drivers.isActive ? 'Active' : 'Inactive' %></p>
+                </div>
+            <% } %>
+        </div>
+        
+
+        <!-- Back Button -->
+        <div class="text-center mt-8">
+            <a href="/" class="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700">Back to Home</a>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track User Location</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>#map { height: 700px; }</style>
+</head>
+<body>
+    <h2>Driver Map - Tracking User</h2>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([0, 0], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        var driverMarker, userMarker;
+        
+        // Custom user icon
+        var userIcon = L.icon({
+            iconUrl: "images/user.png",
+            iconSize: [50, 50]
+        });
+
+        function fetchUserLocation() {
+            fetch('/get-user-location')  // Backend API to get user location
+                .then(response => response.json())
+                .then(data => {
+                    const { lat, lng } = data;
+                    
+                    if (!userMarker) {
+                        userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
+                    } else {
+                        userMarker.setLatLng([lat, lng]); // Update position
+                    }
+                })
+                .catch(error => console.error("Error fetching user location:", error));
+        }
+
+        function getDriverLocation() {
+            navigator.geolocation.getCurrentPosition(position => {
+                const { latitude, longitude } = position.coords;
+
+                if (!driverMarker) {
+                    driverMarker = L.marker([latitude, longitude]).addTo(map);
+                    map.setView([latitude, longitude], 15);
+                } else {
+                    driverMarker.setLatLng([latitude, longitude]); // Update position
+                }
+
+                fetch('/update-driver-location', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lat: latitude, lng: longitude })
+                }).catch(err => console.error("Error updating driver location:", err));
+            });
+        }
+
+        setInterval(fetchUserLocation, 5000);  // Update user location every 5s
+        setInterval(getDriverLocation, 10000);  // Update driver location every 10s
+        getDriverLocation(); // Initial fetch
+    </script>
+</body>
+</html>

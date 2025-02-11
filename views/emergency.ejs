@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Drivers</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Add this in the <head> section -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- Add this below the booking form -->
+<div id="map" style="height: 400px; width: 100%; display: none;"></div>
+
+    <div class="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+        <h2 class="text-2xl font-bold text-center mb-4">Available Drivers</h2>
+        <ul id="driver-list" class="space-y-4">
+            <% drivers.forEach(driver=> { %>
+                <li class="p-4 bg-gray-100 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold">
+                        <%= driver.name %>
+                    </h3>
+                    <p class="text-gray-700">Phone: <%= driver.contactNumber %>
+                    </p>
+                    <p class="text-gray-700">Distance: <%= driver.distance.toFixed(2) %> km</p>
+                    <a href="tel:<%= driver.contactNumber %>"
+                        class="bg-green-500 text-white px-4 py-2 mt-2 inline-block rounded hover:bg-green-600">
+                        Call Driver
+                    </a>
+                    <button onclick="showBookingForm('<%= driver._id %>')"
+                        class="bg-blue-500 text-white px-4 py-2 mt-2 inline-block rounded hover:bg-blue-600">
+                        Book Ambulance
+                    </button>
+                </li>
+                <% }); %>
+        </ul>
+    </div>
+
+    <!-- Booking Form (Hidden by Default) -->
+    <div id="bookingForm" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 class="text-xl font-bold mb-4">Book Ambulance</h2>
+            <input type="text" id="patientName" placeholder="Patient Name" class="w-full p-2 border rounded mb-2">
+            <input type="text" id="patientMobile" placeholder="Mobile Number" class="w-full p-2 border rounded mb-2">
+            <div class="flex justify-between mt-4">
+                <button id="confirmBooking" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                    Confirm
+                </button>
+                <button onclick="closeBookingForm()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedDriverId = null;
+
+        function showBookingForm(driverId) {
+            selectedDriverId = driverId;
+            document.getElementById("bookingForm").classList.remove("hidden");
+        }
+
+        function closeBookingForm() {
+            document.getElementById("bookingForm").classList.add("hidden");
+        }
+
+        document.getElementById("confirmBooking").addEventListener("click", function () {
+            const patientName = document.getElementById("patientName").value;
+            const patientMobile = document.getElementById("patientMobile").value;
+        
+            if (!patientName || !patientMobile) {
+                alert("Please enter patient details.");
+                return;
+            }
+        
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const bookingData = {
+                        driverId: selectedDriverId,
+                        patientName,
+                        patientMobile,
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+        
+                    fetch('/book-ambulance', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookingData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Ambulance booked successfully! Redirecting to live tracking...");
+        
+                            // Redirect the user to the tracking page
+                            window.location.href = `/user-map?driverId=${selectedDriverId}`;
+                        } else {
+                            alert("Failed to book ambulance. Please try again.");
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+                }, error => {
+                    alert("Unable to fetch location. Please enable location services.");
+                    console.error(error);
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
+        
+        
+        function initMap(userLat, userLng, driverLat, driverLng) {
+            // Create map instance
+            const map = L.map('map').setView([userLat, userLng], 13);
+        
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        
+            // Add User and Driver markers
+            const userMarker = L.marker([userLat, userLng]).addTo(map);
+            userMarker.bindPopup("<b>User Location</b>");
+        
+            const driverMarker = L.marker([driverLat, driverLng]).addTo(map);
+            driverMarker.bindPopup("<b>Driver Location</b>");
+        }
+        
+
+        function updateDriverLocation(driverId) {
+            setInterval(() => {
+                fetch(`/driver/${driverId}/location`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update driver marker on map
+                        driverMarker.setLatLng([data.latitude, data.longitude]);
+                    });
+            }, 5000); // Update every 5 seconds
+        }        
+
+        function fetchDrivers() {
+            fetch("/driver/emergency-data")
+                .then(response => response.json())
+                .then(data => {
+                    const driverList = document.getElementById("driver-list");
+                    driverList.innerHTML = "";
+
+                    data.forEach(driver => {
+                        const driverItem = `
+                            <li class="p-4 bg-gray-100 rounded-lg shadow">
+                                <h3 class="text-lg font-semibold">${driver.name}</h3>
+                                <p class="text-gray-700">Phone: ${driver.contactNumber}</p>
+                                <p class="text-gray-700">Distance: ${driver.distance.toFixed(2)} km</p>
+                                <a href="tel:${driver.contactNumber}"
+                                    class="bg-green-500 text-white px-4 py-2 mt-2 inline-block rounded hover:bg-green-600">
+                                    Call Driver
+                                </a>
+                                <button onclick="showBookingForm('${driver._id}')"
+                                    class="bg-blue-500 text-white px-4 py-2 mt-2 inline-block rounded hover:bg-blue-600">
+                                    Book Ambulance
+                                </button>
+                            </li>`;
+                        driverList.innerHTML += driverItem;
+                    });
+                })
+                .catch(error => console.error("Error fetching drivers:", error));
+        }
+
+        // Fetch drivers every 10 seconds
+        setInterval(fetchDrivers, 10000);
+        fetchDrivers();
+    </script>
+</body>
+
+</html>

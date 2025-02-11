@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Portal Login and Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+    <h2 class="text-center text-2xl font-semibold mb-4">Select Portal</h2>
+
+    <!-- Role Selection Buttons -->
+    <div class="flex justify-around mb-6">
+        <a href="/user-login" class="portal-btn bg-blue-500 text-white py-2 px-4 rounded">User Portal</a>
+        <a href="/driver-login" class="portal-btn bg-green-500 text-white py-2 px-4 rounded">Driver Portal</a>
+        <a href="/doctor-login" class="portal-btn bg-purple-500 text-white py-2 px-4 rounded">Doctor Portal</a>
+    </div>
+   <!-- The portal content will be rendered dynamically from EJS templates -->
+</div>
+</body>
+</html>
