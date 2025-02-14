@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const Driver = require('../models/Driver');
+const Hospital = require('../models/Hospital'); // Import Hospital model
 const multer = require('multer');
+const mongoose = require('mongoose');
 
 // Configure Multer for memory storage
 const storage = multer.memoryStorage();
@@ -11,8 +13,14 @@ const upload = multer({ storage });
 // Driver registration route
 router.post('/driver-register', upload.single('drivingLicensePhoto'), async (req, res) => {
     try {
-        const { name, email, contactNumber, age, password } = req.body;
+        const { name, email, contactNumber, age, password, hospital, shift } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        const hospitalExists = await Hospital.findById(hospital);
+        if (!hospitalExists) {
+            req.flash('error_msg', 'Invalid hospital selection');
+            return res.redirect('/doctor-register');
+        }
 
         const drivingLicensePhoto = req.file
             ? { data: req.file.buffer, contentType: req.file.mimetype }
@@ -23,10 +31,12 @@ router.post('/driver-register', upload.single('drivingLicensePhoto'), async (req
             email,
             contactNumber,
             age,
+            hospital: hospitalExists._id,
             password: hashedPassword,
             drivingLicensePhoto,
             isActive: false, // Initially set as inactive
             location: null,  // No initial location
+            shift
         });
 
         await newDriver.save();
@@ -63,6 +73,7 @@ router.post('/driver-login', async (req, res) => {
     }
 });
 
+
 router.get('/driver-dashboard', (req, res) => {
     const success_msg = req.flash('success_msg');
     res.render('driver-dashboard', { success_msg });
@@ -96,16 +107,146 @@ router.post('/available-driver', async (req, res) => {
     }
 });
 
-// Fetch available drivers sorted by distance
+router.get('/:driverId/location', async (req, res) => {
+    try {
+        const { driverId } = req.params;
+        const driver = await Driver.findById(driverId);
+
+        if (!driver || !driver.location) {
+            return res.status(404).json({ error: "Driver location not found" });
+        }
+
+        res.json({ latitude: driver.location.latitude, longitude: driver.location.longitude });
+    } catch (error) {
+        console.error("Error fetching driver location:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+router.post("/update-location", async (req, res) => {
+    const { driverId, latitude, longitude } = req.body;
+
+    if (!driverId || !latitude || !longitude) {
+        return res.status(400).send("All fields are required");
+    }
+
+    try {
+        await Driver.findByIdAndUpdate(driverId, {
+            location: { latitude, longitude }
+        });
+        res.send("Location updated");
+    } catch (error) {
+        console.error("Error updating driver location:", error);
+        res.status(500).send("Server error");
+    }
+});
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    
+    const toRad = (value) => (value * Math.PI) / 180;
+    const R = 6371; // Earth radius in km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    return distance;
+}
+
+router.get("/emergency", async (req, res) => {
+    try {
+        console.log("Emergency route accessed");
+
+        if (!req.session.userLocation) {
+            console.log("User location not found in session");
+            return res.status(400).send("User location not found");
+        }
+
+        const { latitude, longitude } = req.session.userLocation;
+
+        // Get all active drivers with valid locations
+        let drivers = await Driver.find({ isActive: true, location: { $ne: null } });
+
+        // Calculate distance for each driver
+        drivers = drivers.map(driver => {
+            if (driver.location) {
+                const distance = getDistance(latitude, longitude, driver.location.latitude, driver.location.longitude);
+                return { ...driver.toObject(), distance };
+            }
+            return null;
+        }).filter(driver => driver !== null);
+
+        // Sort drivers based on distance
+        drivers.sort((a, b) => a.distance - b.distance);
+
+        // If no drivers available, return an empty list
+        if (drivers.length === 0) {
+            return res.render("emergency", { drivers: [], nearestDriver: null, userLat: latitude, userLng: longitude });
+        }
+
+        res.render("emergency", { 
+            drivers,  // List of all drivers
+            nearestDriver: drivers[0], // Closest driver
+            userLat: latitude, 
+            userLng: longitude 
+        });
+
+    } catch (error) {
+        console.error("Error in emergency route:", error);
+        res.status(500).send("Server error");
+    }
+});
+
+
+router.get("/emergency-data", async (req, res) => {
+    try {
+        if (!req.session.userLocation) {
+            return res.status(400).json({ error: "User location not found" });
+        }
+
+        const { latitude, longitude } = req.session.userLocation;
+        let drivers = await Driver.find({ isActive: true, location: { $ne: null } });
+
+        drivers = drivers.map(driver => {
+            if (driver.location) {
+                const distance = getDistance(latitude, longitude, driver.location.latitude, driver.location.longitude);
+                return { ...driver.toObject(), distance };
+            }
+            return null;
+        }).filter(driver => driver !== null);
+
+        drivers.sort((a, b) => a.distance - b.distance);
+
+        res.json(drivers);
+    } catch (error) {
+        console.error("Error in emergency-data route:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
 
 router.get("/:id", async (req, res) => {
     try {
-        const driver = await Driver.findById(req.params.id);
+        console.log("Received ID:", req.params.id);
+
+        const driverId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(driverId)) {
+            console.log("Invalid ObjectId:", driverId);
+            return res.status(400).send("Invalid driver ID");
+        }
+
+        const driver = await Driver.findById(driverId);
         if (!driver) return res.status(404).send("Driver not found");
-        res.render("available-driver", { driver });
+
+        res.render("available-driver", { drivers: driver });
     } catch (error) {
         console.error(error);
-        res.status(500).send("Server error");
+        res.status(500).send("Internal Server Error");
     }
 });
 

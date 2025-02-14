@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hospital Portal - Book My Ambulance (BMA)</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+
+    <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
+    <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
+    
+    <div class="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
+        <h2 class="text-center text-2xl font-semibold mb-4">Hospital Portal</h2>
+        <div class="flex justify-between mb-6">
+            <button id="login-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-blue-500 focus:outline-none" aria-selected="true">
+                Login
+            </button>
+            <button id="register-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-gray-200 focus:outline-none" aria-selected="false">
+                Register
+            </button>
+        </div>
+
+        <div id="login-form">
+            <h2 class="text-2xl font-bold mb-6 text-center">Login to your account</h2>
+            <form action="/hospital/login" method="POST">
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Email</label>
+                    <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-6">
+                    <label class="block mb-2 text-sm text-gray-600">Password</label>
+                    <input type="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">Login</button>
+            </form>
+        </div>
+
+        <div id="register-form" class="hidden">
+            <h2 class="text-2xl font-bold mb-6 text-center">Register a new hospital</h2>
+            <form action="/hospital/register" method="POST">
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Hospital Name</label>
+                    <input type="text" name="name" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter hospital name" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Address</label>
+                    <input type="text" name="address" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter address" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Contact</label>
+                    <input type="text" name="contact" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter contact number" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Responsible Person</label>
+                    <input type="text" name="responsiblePerson" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter responsible person" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Role</label>
+                    <select name="role" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                        <option value="Operation Manager">Operation Manager</option>
+                        <option value="Trauma Center Head">Trauma Center Head</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Email</label>
+                    <input type="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Enter email" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm text-gray-600">Password</label>
+                    <input type="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Create a password" required>
+                </div>
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+                <button type="submit" class="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-tab').addEventListener('click', () => {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+        });
+
+        document.getElementById('register-tab').addEventListener('click', () => {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+        });
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+            });
+        }
+    </script>
+</body>
+</html>

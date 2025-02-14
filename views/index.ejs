@@ -5,19 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book My Ambulance (BMA)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body class="bg-gray-50">
+<body class="">
 
     <!-- Navbar -->
-    <nav class="bg-white shadow-lg relative">
+    <nav class="bg-white text-black shadow-lg relative">
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
                 <!-- Logo -->
                 <div class="flex items-center">
                     <img src="/images/bma-logo.webp" alt="BMA Logo" class="h-10 w-10 mr-2">
-                    <a href="/" class="text-2xl font-bold text-gray-800">Book My Ambulance</a>
+                    <a href="/" class="text-2xl font-bold ">Book My Ambulance</a>
                 </div>
                 <!-- Navigation Links -->
                 <div class="hidden sm:flex space-x-4">
@@ -61,7 +62,7 @@
 
     <!-- Sliding Login Menu -->
     <div id="login-menu"
-        class="fixed inset-y-0 right-0 w-full sm:w-80 bg-white shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out p-6 z-50 sm:rounded-l-lg">
+        class="fixed inset-y-0 right-0 w-full sm:w-80 bg-gradient-to-r from-purple-400 to-blue-300 shadow-lg transform translate-x-full transition-transform duration-300 ease-in-out p-6 z-50 sm:rounded-l-lg">
         <button id="close-menu" class="absolute top-4 right-4 text-gray-600 text-2xl">✖</button>
         <h2 class="text-center text-2xl font-semibold mb-4">Select Portal</h2>
         <div class="flex flex-col space-y-4">
@@ -71,28 +72,30 @@
                 Portal</a>
             <a href="/doctor-login" class="portal-btn bg-purple-500 text-white py-3 px-4 rounded text-center">Doctor
                 Portal</a>
+            <a href="/hospital-login" class="portal-btn bg-yellow-500 text-white py-3 px-4 rounded text-center">Hospital
+                Portal</a>
         </div>
     </div>
 
     <!-- Overlay (for closing menu when clicking outside) -->
     <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden"></div>
 
+    <section id="background-slideshow"
+    class="bg-blue-600 text-white py-40 md:py-60 text-center h-screen relative overflow-hidden">
+    <div class="container mx-auto px-4 relative z-10">
+        <h2 class="text-2xl md:text-4xl font-bold mb-4">Book Ambulance Instantly Based on Doctor's Department</h2>
+        <p class="mb-8 text-sm md:text-base">Select a department, and we will connect you with the nearest available
+            ambulance in minutes.</p>
+        <a href="<%= user ? '/department' : '/user-login' %>"
+            class="bg-white text-blue-600 px-6 py-3 rounded-full hover:bg-gray-200">
+            Book Now
+        </a>
+
+    </div>
+    <div class="absolute inset-0 bg-black opacity-50 z-0"></div>
+</section>
 
     <!-- Hero Section -->
-    <section id="background-slideshow"
-        class="bg-blue-600 text-white py-40 md:py-60 text-center relative overflow-hidden">
-        <div class="container mx-auto px-4 relative z-10">
-            <h2 class="text-2xl md:text-4xl font-bold mb-4">Book Ambulance Instantly Based on Doctor's Department</h2>
-            <p class="mb-8 text-sm md:text-base">Select a department, and we will connect you with the nearest available
-                ambulance in minutes.</p>
-            <a href="<%= user ? '/department' : '/user-login' %>"
-                class="bg-white text-blue-600 px-6 py-3 rounded-full hover:bg-gray-200">
-                Book Now
-            </a>
-
-        </div>
-        <div class="absolute inset-0 bg-black opacity-50 z-0"></div>
-    </section>
 
     <!-- Safety Section -->
     <form method="post" action="/safety">
@@ -184,27 +187,27 @@
             });
         });
 
-
-
         const images = [
-            '/images/bg/bg1.jpg',
-            '/images/bg/bg2.jpg',
-            '/images/bg/bg3.jpg',
-            '/images/bg/bg4.png'
-        ];
-        let currentImageIndex = 0;
+        '/images/bg/bg1.jpg',
+        '/images/bg/bg2.jpg',
+        '/images/bg/bg3.jpg',
+        '/images/bg/bg4.png'
+    ];
+    let currentImageIndex = 0;
 
-        function changeBackgroundImage() {
-            const section = document.getElementById('background-slideshow');
-            section.style.backgroundImage = `url(${images[currentImageIndex]})`;
-            section.style.backgroundSize = 'cover';
-            section.style.backgroundPosition = 'center';
+    function changeBackgroundImage() {
+        const section = document.getElementById('background-slideshow');
+        section.style.backgroundImage = `url(${images[currentImageIndex]})`;
+        section.style.backgroundSize = 'cover';
+        section.style.backgroundPosition = 'center';
 
-            currentImageIndex = (currentImageIndex + 1) % images.length;
-        }
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+    }
 
-        changeBackgroundImage();
-        setInterval(changeBackgroundImage, 2000);
+    changeBackgroundImage();
+    setInterval(changeBackgroundImage, 2000);
+
+
 
         document.getElementById("menu-toggle").addEventListener("click", function () {
             const menu = document.getElementById("mobile-menu");

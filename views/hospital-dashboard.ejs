@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Dashboard - BMA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.10.2/cdn.min.js" defer></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 1s ease-out; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #B2F7EF, #F7D1E0, #A6E3E9);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex flex-col" x-data="{ shift: 'day' }">
+    
+    <!-- Navbar -->
+    <nav class="bg-blue-400 text-white p-4 shadow-md flex justify-between items-center animate-fade-in">
+        <h1 class="text-xl font-semibold">Hospital Dashboard</h1>
+        <a href="/hospital/logout" class="bg-red-400 px-4 py-2 rounded hover:bg-red-500 transition duration-300">Logout</a>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container mx-auto p-6 animate-fade-in">
+        <div class="bg-white shadow-lg rounded-lg p-6 transition-transform transform hover:scale-105 duration-300 card-shadow">
+            <h2 class="text-2xl font-semibold text-center mb-4 text-blue-500">Welcome, <%= hospital.name %></h2>
+            <p class="text-center text-gray-600 mb-6">Registered on: <%= new Date(hospital.registeredAt).toLocaleDateString() %></p>
+            
+            <!-- Hospital Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                <div class="p-4 border rounded-lg bg-pink-100 hover:shadow-lg transition duration-300">
+                    <h3 class="font-semibold">Address:</h3>
+                    <p class="text-gray-600"><%= hospital.address %></p>
+                </div>
+                <div class="p-4 border rounded-lg bg-green-100 hover:shadow-lg transition duration-300">
+                    <h3 class="font-semibold">Contact:</h3>
+                    <p class="text-gray-600"><%= hospital.contact %></p>
+                </div>
+                <div class="p-4 border rounded-lg bg-blue-100 hover:shadow-lg transition duration-300">
+                    <h3 class="font-semibold">Responsible Person:</h3>
+                    <p class="text-gray-600"><%= hospital.responsiblePerson %> (<%= hospital.role %>)</p>
+                </div>
+                <div class="p-4 border rounded-lg bg-pink-100 hover:shadow-lg transition duration-300">
+                    <h3 class="font-semibold">Location:</h3>
+                    <p class="text-gray-600">Latitude: <%= hospital.location.latitude %>, Longitude: <%= hospital.location.longitude %></p>
+                </div>
+            </div>
+            
+            <!-- Shift Toggle -->
+            <div class="mt-6 flex justify-center gap-4 animate-fade-in">
+              <button @click="shift = 'Day'" :class="shift === 'Day' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'" class="px-4 py-2 rounded shadow-lg">Day Shift</button>
+              <button @click="shift = 'Night'" :class="shift === 'Night' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'" class="px-4 py-2 rounded shadow-lg">Night Shift</button>
+          </div>
+            
+            <!-- Doctors and Drivers List -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Doctors List -->
+              <div class="p-4 border rounded-lg bg-green-100 hover:shadow-lg transition duration-300 animate-fade-in">
+                  <h3 class="text-lg font-semibold mb-2 text-green-700">Doctors (<span x-text="shift"></span> Shift)</h3>
+                  <ul class="space-y-4">
+                      <% doctors.forEach(doctor => { %>
+                          <% if (doctor.shift === 'Day' || doctor.shift === 'Night') { %>
+                              <li x-show="shift === '<%= doctor.shift %>'" class="p-4 border rounded-lg shadow-md flex items-center space-x-4 bg-white">
+                                  <img src="/doctor-profile/<%= doctor._id %>/profile-picture" alt="Doctor Profile" class="w-16 h-16 rounded-full object-cover border-2 border-green-500">
+                                  <div class="flex-1">
+                                      <h3 class="text-lg font-semibold text-green-700">Dr. <%= doctor.fullName %></h3>
+                                      <p class="text-gray-600"><%= doctor.department %></p>
+                                      <p class="text-gray-500 text-sm">📧 <%= doctor.email %></p>
+                                      <p class="text-gray-500 text-sm">📞 <%= doctor.contact %></p>
+                                  </div>
+                                  <span class="px-3 py-1 text-sm font-semibold rounded-full <%= doctor.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                      <%= doctor.status %>
+                                  </span>
+                              </li>
+                          <% } %>
+                      <% }) %>
+                  </ul>
+              </div>
+          
+              <!-- Drivers List -->
+              <div class="p-4 border rounded-lg bg-blue-100 hover:shadow-lg transition duration-300 animate-fade-in">
+                  <h3 class="text-lg font-semibold mb-2 text-blue-700">Drivers (<span x-text="shift"></span> Shift)</h3>
+                  <ul class="space-y-4">
+                      <% drivers.forEach(driver => { %>
+                          <% if (driver.shift === 'Day' || driver.shift === 'Night') { %>
+                              <li x-show="shift === '<%= driver.shift %>'" class="p-4 border rounded-lg shadow-md flex items-center space-x-4 bg-white">
+                                  <div class="flex-1">
+                                      <h3 class="text-lg font-semibold text-green-700">Driver <%= driver.name %></h3>
+                                      <p class="text-gray-500 text-sm">📧 <%= driver.email %></p>
+                                      <p class="text-gray-500 text-sm">📞 <%= driver.contactNumber %></p>
+                                  </div>
+                                  <span class="px-3 py-1 text-sm font-semibold rounded-full <%= driver.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                      Active Status: <%= driver.isActive ? "Active" : "Inactive" %>
+                                  </span>
+                              </li>
+                          <% } %>
+                      <% }) %>
+                  </ul>
+              </div>
+          </div>
+        </div>
+    </div>
+    
+</body>
+</html>

@@ -6,48 +6,75 @@
     <title>Track Ambulance</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>#map { height: 700px; }</style>
+    <style>
+        #map { height: 700px; }
+    </style>
 </head>
 <body>
-    <h2>User Map - Tracking Driver</h2>
+    <h2>Tracking Driver</h2>
     <div id="map"></div>
 
     <script>
-        var map = L.map('map').setView([0, 0], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    
-        var userMarker, driverMarker;
-    
-        var userIcon = L.icon({ iconUrl: "images/user.png", iconSize: [50, 50] });
-        var ambulanceIcon = L.icon({ iconUrl: "images/ambulance.png", iconSize: [50, 50] });
-    
-        function fetchLocations() {
-            fetch(`/get-locations?driverId=<%= driverId %>&userId=<%= userId %>`)
-                .then(response => response.json())
-                .then(data => {
-                    const { driver, user } = data;
-    
-                    // Update User Marker
-                    if (!userMarker) {
-                        userMarker = L.marker([user.lat, user.lng], { icon: userIcon }).addTo(map);
-                        map.setView([user.lat, user.lng], 15);
-                    } else {
-                        userMarker.setLatLng([user.lat, user.lng]);
-                    }
-    
-                    // Update Driver Marker
-                    if (!driverMarker) {
-                        driverMarker = L.marker([driver.lat, driver.lng], { icon: ambulanceIcon }).addTo(map);
-                    } else {
-                        driverMarker.setLatLng([driver.lat, driver.lng]);
-                    }
-                })
-                .catch(error => console.error("Error fetching locations:", error));
-        }
-    
-        setInterval(fetchLocations, 5000);
-        fetchLocations();
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const driverId = urlParams.get("driverId");
+            const userLat = parseFloat(urlParams.get("lat"));
+            const userLng = parseFloat(urlParams.get("lng"));
+        
+            if (!driverId) {
+                alert("No driver selected.");
+                return;
+            }
+        
+            // Initialize Map
+            const map = L.map("map").setView([userLat, userLng], 13);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+        
+            // Add User Marker
+            const userMarker = L.marker([userLat, userLng]).addTo(map)
+                .bindPopup("<b>Your Location</b>").openPopup();
+        
+            let driverMarker;
+            let routeLayer;
+            
+            const apiKey = "5b3ce3597851110001cf624875d2ab24ccd14d478d992b2865e78d90"; // Replace with your API key
+        
+            // Fetch Driver Location
+            function fetchDriverLocation() {
+                fetch(`/driver/${driverId}/location`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.latitude && data.longitude) {
+                            if (!driverMarker) {
+                                driverMarker = L.marker([data.latitude, data.longitude]).addTo(map)
+                                    .bindPopup("<b>Driver Location</b>").openPopup();
+                            } else {
+                                driverMarker.setLatLng([data.latitude, data.longitude]);
+                            }
+        
+                            // Fetch Shortest Route from OpenRouteService
+                            fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${userLng},${userLat}&end=${data.longitude},${data.latitude}&format=geojson`)
+                                .then(response => response.json())
+                                .then(routeData => {
+                                    if (routeLayer) {
+                                        map.removeLayer(routeLayer); // Remove old route
+                                    }
+                                    routeLayer = L.geoJSON(routeData, {
+                                        style: { color: "blue", weight: 4 }
+                                    }).addTo(map);
+                                })
+                                .catch(error => console.error("Error fetching route:", error));
+                        }
+                    })
+                    .catch(error => console.error("Error fetching driver location:", error));
+            }
+        
+            fetchDriverLocation();
+            setInterval(fetchDriverLocation, 5000); // Update every 5 seconds
+        });
+        
     </script>
-    
 </body>
 </html>

@@ -24,6 +24,11 @@ const driverSchema = new mongoose.Schema({
         type: String,
         required: true,  // Correct use of required
     },
+     hospital: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Hospital',  // Linking to the Hospital model
+            required: true,
+        },
     drivingLicensePhoto: {
         data: {
             type: Buffer, // Correctly specifying the type for the buffer
@@ -38,6 +43,11 @@ const driverSchema = new mongoose.Schema({
     location: {
         latitude: Number,
         longitude: Number
+    },
+    shift: {
+        type: String,
+        enum: ['Day', 'Night'], // Assigning shift timing
+        required: true,
     }
 });
 

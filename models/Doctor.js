@@ -16,7 +16,8 @@ const doctorSchema = new mongoose.Schema({
         required: true,
     },
     hospital: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Hospital',  // Linking to the Hospital model
         required: true,
     },
     password: {
@@ -38,8 +39,13 @@ const doctorSchema = new mongoose.Schema({
         type: String,
         enum: ['Available', 'Unavailable'],
         default: 'Available'
+    },
+    shift: {
+        type: String,
+        enum: ['Day', 'Night'], // Assigning shift timing
+        required: true,
     }
-});
+}, { timestamps: true });
 
 // Export Doctor model
 module.exports = mongoose.model('Doctor', doctorSchema);

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Login - 3D Interactive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #1e293b, #0f172a); }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: -1; }
+    </style>
+</head>
+<body class="flex justify-center items-center h-screen text-white">
+    <canvas id="bgCanvas"></canvas>
+    <div class="relative bg-white/10 p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+        <h2 class="text-3xl font-bold mb-6">Driver Login</h2>
+        <form action="/driver/driver-login" method="POST">
+            <input type="email" name="email" placeholder="Email" class="w-full p-3 mb-4 bg-gray-800 border border-gray-700 rounded-lg">
+            <input type="password" name="password" placeholder="Password" class="w-full p-3 mb-4 bg-gray-800 border border-gray-700 rounded-lg">
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 p-3 rounded-lg font-semibold">Login</button>
+        </form>
+    </div>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bgCanvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+        const material = new THREE.MeshStandardMaterial({ color: 0x1e90ff, metalness: 0.7, roughness: 0.3 });
+        const torusKnot = new THREE.Mesh(geometry, material);
+        scene.add(torusKnot);
+        
+        const light = new THREE.PointLight(0xffffff, 1, 100);
+        light.position.set(10, 10, 10);
+        scene.add(light);
+        
+        camera.position.z = 30;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            torusKnot.rotation.x += 0.01;
+            torusKnot.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

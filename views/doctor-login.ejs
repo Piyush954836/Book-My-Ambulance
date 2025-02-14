@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Login or Register - Book My Ambulance (BMA)</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex justify-center items-center h-screen">
+<body class="flex justify-center items-center h-screen bg-cover bg-center" style="background-image: url('/images/bg/bg2.jpg');">
     <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
       <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
 
     <!-- Container for Login/Register Form -->
-    <div class="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
+    <div class="bg-white bg-opacity-80 shadow-lg rounded-lg w-full max-w-md p-8">
       <h2 class="text-center text-2xl font-semibold mb-4">Doctor Portal</h2>
         <!-- Tabs -->
         <div class="flex justify-between mb-6">
@@ -72,9 +71,25 @@
 
                 <div class="mb-4">
                   <label for="hospital" class="block text-sm font-semibold mb-2">Hospital</label>
-                  <input type="hospital" id="hospital" name="hospital" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" placeholder="Enter your hospital or clinic" required>
+                  <select id="hospital" name="hospital" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" required>
+                    <option value="" disabled selected>Select your hospital</option>
+                    <% hospitals.forEach(hospital => { %>
+                      <option class="text-black" value="<%= hospital._id %>"><%= hospital.name %></option>
+                    <% }) %>
+                  </select>
                 </div>
-        
+
+                
+                <div class="mb-4">
+                  <label class="block text-sm font-semibold mb-2">Shift</label>
+                  <select name="shift" class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500" required>
+                    <option value="" disabled selected>Select your Shift</option>                    
+                    <option class="text-black" value="Day">Day</option>                 
+                    <option class="text-black" value="Night">Night</option>                 
+                  </select>
+                </div>
+                
+              
                 <!-- Password -->
                 <div class="mb-4">
                   <label for="password" class="block text-sm font-semibold mb-2">Password</label>

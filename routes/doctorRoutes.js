@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Doctor = require('../models/Doctor');
+const Hospital = require('../models/Hospital'); // Import Hospital model
+const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 
@@ -11,8 +13,15 @@ const upload = multer({ storage });
 // Doctor registration route
 router.post('/doctor-register', upload.single('profilePicture'), async (req, res) => {
     try {
-        const { fullName, email, contact, hospital, password, department } = req.body;
-        
+        const { fullName, email, contact, hospital, password, department, shift } = req.body;
+
+        // Validate hospital existence
+        const hospitalExists = await Hospital.findById(hospital);
+        if (!hospitalExists) {
+            req.flash('error_msg', 'Invalid hospital selection');
+            return res.redirect('/doctor-register');
+        }
+
         // Hash the password before saving it
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -25,27 +34,27 @@ router.post('/doctor-register', upload.single('profilePicture'), async (req, res
             fullName,
             email,
             contact,
-            hospital,
-            password: hashedPassword,  // Save the hashed password
+            hospital: hospitalExists._id, // Store hospital ID reference
+            password: hashedPassword,  
             department,
-            profilePicture
+            profilePicture,
+            shift
         });
 
         await newDoctor.save();
-        res.redirect('/doctor-login'); // Redirect or send response as needed
+        req.flash('success_msg', 'Doctor registered successfully');
+        res.redirect('/doctor-login');
     } catch (error) {
-        console.error(error);
+        console.error("Doctor registration error:", error);
         res.status(500).send('Error registering doctor');
     }
 });
 
+// Fetch doctor's profile picture
 router.get('/doctor-profile/:id/profile-picture', async (req, res) => {
     try {
-        console.log("Fetching image for doctor:", req.params.id); // Debugging log
-
         const doctor = await Doctor.findById(req.params.id);
-        if (!doctor || !doctor.profilePicture || !doctor.profilePicture.data) {
-            console.log("No profile picture found.");
+        if (!doctor || !doctor.profilePicture?.data) {
             return res.redirect('/default-avatar.png'); // Default image
         }
 
@@ -57,55 +66,63 @@ router.get('/doctor-profile/:id/profile-picture', async (req, res) => {
     }
 });
 
-
 // Doctor login route
 router.post('/doctor-login', async (req, res) => {
     try {
         const { email, password } = req.body;
+        const doctor = await Doctor.findOne({ email }).populate('hospital');
+        
 
-        // Find the doctor by email
-        const doctor = await Doctor.findOne({ email });
-        if (!doctor) {
-            console.log('Doctor not found for email:', email);
+        if (!doctor || !(await bcrypt.compare(password, doctor.password))) {
             req.flash('error_msg', 'Invalid email or password');
             return res.redirect('/doctor-login');
         }
 
-        // Check password
-        const isMatch = await bcrypt.compare(password, doctor.password);
-
-        if (!isMatch) {
-            req.flash('error_msg', 'Invalid email or password');
-            return res.redirect('/doctor-login');
-        }
-
-        // Password matched, set up session
-        req.session.doctorId = doctor._id; // Save doctor ID in session
-
+        // Store doctor ID in session
+        req.session.doctorId = doctor._id;
         req.flash('success_msg', 'Login successful!');
-        return res.redirect('/doctor-dashboard');
+        res.redirect('/doctor-dashboard');
     } catch (error) {
+        console.error("Doctor login error:", error);
         req.flash('error_msg', 'Something went wrong');
-        return res.redirect('/doctor-login');
+        res.redirect('/doctor-login');
     }
 });
 
+// Get doctors by department
+router.get('/', async (req, res) => {
+    try {
+        const { department } = req.query;
+        const doctors = await Doctor.find({ department }).populate('hospital');
+
+        if (!doctors.length) {
+            return res.status(404).send('No doctors found for this department');
+        }
+
+        let user = null;
+        if (req.session.userId) {
+            user = await User.findById(req.session.userId);
+        }
+
+        res.render('available-doctor', { user, doctors, department });
+    } catch (error) {
+        console.error("Error fetching doctors:", error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Update doctor's availability status
 router.post('/update-status', async (req, res) => {
     try {
-        // Get the status from the request body
         const { status } = req.body;
-
-        // Check if the doctor is logged in
         const doctor = await Doctor.findById(req.session.doctorId);
         if (!doctor) {
             return res.status(404).json({ success: false, message: 'Doctor not found' });
         }
 
-        // Update the doctor's status
-        doctor.status = status;  // Update status in the doctor object
+        doctor.status = status;
         await doctor.save();
 
-        // Return a success response
         res.json({ success: true });
     } catch (error) {
         console.error('Error updating status:', error);
@@ -113,7 +130,7 @@ router.post('/update-status', async (req, res) => {
     }
 });
 
-
+// Doctor dashboard route
 router.get('/doctor-dashboard', async (req, res) => {
     try {
         if (!req.session.doctorId) {
@@ -121,7 +138,7 @@ router.get('/doctor-dashboard', async (req, res) => {
             return res.redirect('/doctor-login');
         }
 
-        const doctor = await Doctor.findById(req.session.doctorId);
+        const doctor = await Doctor.findById(req.session.doctorId).populate('hospital');
 
         if (!doctor) {
             req.flash('error_msg', 'Doctor not found');
@@ -130,12 +147,10 @@ router.get('/doctor-dashboard', async (req, res) => {
 
         res.render('doctor-dashboard', { doctor });
     } catch (error) {
-        console.error(error);
+        console.error("Doctor dashboard error:", error);
         req.flash('error_msg', 'Something went wrong');
         res.redirect('/doctor-login');
     }
 });
-
-
 
 module.exports = router;
