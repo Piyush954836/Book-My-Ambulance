@@ -11,14 +11,14 @@
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: -1; }
     </style>
 </head>
-<body class="bg-gradient-to-r from-gray-800 via-gray-700 to-black flex justify-center items-center h-screen bg-cover bg-center" style="background-image: url('/images/driverbg.jpg');">
-
+<body class="bg-gradient-to-r from-gray-800 via-gray-700 to-black flex justify-center items-center bg-cover bg-center" style="background-image: url('/images/driverbg.jpg'); background-attachment: fixed; background-size: cover; background-position: center;">
+    <br>
     <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
     <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
 
     <!-- Container for Login/Register Form -->
-    <div class="relative bg-black bg-opacity-50 p-8 px-8 rounded-lg shadow-lg max-w-md w-full text-white text-center">
-        <h2 class="text-center text-2xl font-semibold mb-4">Driver Portal</h2>
+    <div class="mt-4 relative bg-black bg-opacity-75 p-8 px-8 rounded-lg shadow-lg max-w-md w-full text-white text-center">
+        <h2 class="text-center text-3xl font-semibold mb-4">Driver Portal</h2>
         <!-- Tabs -->
         <div class="flex justify-between mb-8">
             <button id="login-tab" class="w-1/2 text-center py-4 text-2xl font-bold border-b-4 border-blue-500 focus:outline-none">
