@@ -6,12 +6,12 @@
     <title>Login or Register - Book My Ambulance (BMA)</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="flex justify-center items-center h-screen bg-cover bg-center" style="background-image: url('/images/bg/bg2.jpg');">
+<body class="flex  justify-center items-center bg-cover bg-center" style="background-image: url('/images/bg/bg2.jpg'); background-attachment: fixed; background-size: cover; background-position: center;">
     <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
       <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
 
     <!-- Container for Login/Register Form -->
-    <div class="bg-white bg-opacity-80 shadow-lg rounded-lg w-full max-w-md p-8">
+    <div class="mt-4 bg-white bg-opacity-80 shadow-lg rounded-lg w-full max-w-md p-8">
       <h2 class="text-center text-2xl font-semibold mb-4">Doctor Portal</h2>
         <!-- Tabs -->
         <div class="flex justify-between mb-6">
@@ -25,7 +25,7 @@
 
         <!-- Login Form -->
         <div id="login-form">
-              <h2 class="text-3xl font-bold text-blue-600 mb-6">Doctor Login</h2>
+              <h2 class="text-center text-3xl font-bold text-blue-600 mb-6">Doctor Login</h2>
               <form action="/doctor/doctor-login" method="POST">
                 
                 <!-- Email -->
@@ -49,7 +49,7 @@
 
         <!-- Register Form (Initially Hidden) -->
         <div id="register-form" class="hidden">
-              <h2 class="text-3xl font-bold text-green-600 mb-6">Doctor Registration</h2>
+          <h2 class="text-center text-3xl font-bold text-blue-600 mb-6">Doctor Registration</h2>
               <form action="/doctor/doctor-register" method="POST" enctype="multipart/form-data">
                 
                 <!-- Full Name -->
@@ -117,7 +117,7 @@
                 </div>
         
                 <!-- Submit Button -->
-                <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">Register</button>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Register</button>
         
               </form>
             <p class="text-center text-sm text-gray-500 mt-6">Already have an account? <button id="switch-to-login" class="text-blue-500 hover:underline">Login here</button></p>
