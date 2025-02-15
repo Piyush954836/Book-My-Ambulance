@@ -7,6 +7,7 @@ const driverRoutes = require('./routes/driverRoutes');
 const doctorRoutes = require('./routes/doctorRoutes');
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const locationRoutes = require('./routes/locationRoutes'); 
+const bookingRoutes = require('./routes/bookingRoutes');
 const Driver = require('./models/Driver');
 const Doctor = require('./models/Doctor');
 const User = require('./models/User');
@@ -55,25 +56,57 @@ app.get('/', (req, res) => {
     res.render('index', { user: req.session.user });
 });
 
+
 // WebSocket for Real-Time Updates
 io.on("connection", (socket) => {
-    socket.on("updateAppointment", async ({ appointmentId, status }) => {
+    console.log("Driver Connected:", socket.id);
+
+    socket.on("joinDriverRoom", (driverId) => {
+        socket.join(driverId);
+        console.log(`Driver ${socket.id} joined room: ${driverId}`);
+
+        // Debugging: Check which rooms the driver is in
+        console.log("Socket rooms:", socket.rooms);
+    });
+
+    // Driver joins a room based on driverId
+    socket.on('newBookingRequest', async (data) => {
+        const { bookingId, status } = data;
+
+        await Booking.findByIdAndUpdate(bookingId, { status });
+
+        io.to(data.patientName).emit('bookingStatusUpdate', { bookingId, status });
+    });
+
+    // Notify driver when a new booking is assigned
+    socket.on("acceptBooking", async ({ bookingId, driverId }) => {
+        try {
+            await Booking.findByIdAndUpdate(bookingId, { status: "accepted" });
+
+            // Emit the notification **only** to the specific driver
+            io.to(driverId).emit("bookingAccepted", { bookingId });
+
+        } catch (error) {
+            console.error("Error accepting booking:", error);
+        }
+    });
+
+    // Notify driver when appointment is updated
+    socket.on("updateAppointment", async ({ appointmentId, status, doctorId }) => {
         await Appointment.findByIdAndUpdate(appointmentId, { status });
 
-        // Notify all users
-        io.emit("appointmentUpdated", { appointmentId, status });
-    });
-});
-
-io.on('connection', (socket) => {
-    console.log('Driver connected:', socket.id);
-
-    socket.on('driverStatusChange', (data) => {
-        io.emit('updateDriverStatus', data); // Broadcast to all users
+        // Notify the **specific doctor** about the appointment update
+        io.to(doctorId).emit("appointmentUpdated", { appointmentId, status });
     });
 
-    socket.on('disconnect', () => {
-        console.log('Driver disconnected:', socket.id);
+    // Driver status update
+    socket.on("driverStatusChange", (data) => {
+        io.emit("updateDriverStatus", data);
+    });
+
+    // Disconnect event
+    socket.on("disconnect", () => {
+        console.log("Driver Disconnected:", socket.id);
     });
 });
 
@@ -82,6 +115,7 @@ app.use('/driver', driverRoutes);
 app.use('/doctor', doctorRoutes);
 app.use("/api", appointmentRoutes);
 app.use('/location', locationRoutes);
+app.use('/book', bookingRoutes(io));
 app.use("/hospital", hospitalRoutes);
 
 app.get('/driver-dashboard', async (req, res) => {
@@ -231,54 +265,6 @@ app.get("/set-location", (req, res) => {
     }
 });
 
-app.post('/book-ambulance', async (req, res) => {
-    try {
-        const { driverId, patientName, patientMobile, latitude, longitude } = req.body;
-
-        if (!driverId || !patientName || !patientMobile || !latitude || !longitude) {
-            return res.status(400).json({ success: false, message: 'All fields are required' });
-        }
-
-        // Create a new booking
-        const newBooking = new Booking({
-            driverId,
-            patientName,
-            patientMobile,
-            userLatitude: latitude,
-            userLongitude: longitude,
-            status: 'pending',
-        });
-
-        await newBooking.save();
-
-        // Get the driver's information (including location)
-        const driver = await Driver.findById(driverId);
-
-        if (!driver) {
-            return res.status(404).json({ success: false, message: 'Driver not found' });
-        }
-
-        // Send response with booking confirmation and driver info
-        res.status(200).json({
-            success: true,
-            message: 'Ambulance booked successfully!',
-            booking: newBooking,
-            driver: {
-                name: driver.name,
-                latitude: driver.latitude,
-                longitude: driver.longitude,
-            },
-            userLocation: {
-                latitude,
-                longitude,
-            }
-        });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, message: 'Failed to book ambulance. Please try again.' });
-    }
-});
 
 app.get("/user-map", async (req, res) => {
     const { driverId, userId, lat, lng } = req.query;

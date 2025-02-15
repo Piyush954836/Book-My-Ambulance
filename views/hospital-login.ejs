@@ -7,12 +7,12 @@
     <title>Hospital Portal - Book My Ambulance (BMA)</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex justify-center items-center h-screen">
+<body class="bg-gray-100 flex justify-center items-center">
 
     <div id="flashContainer" class="fixed top-0 left-0 w-full text-center z-50"></div>
     <div id="errorMessage" style="display: none;"><%= error_msg || '' %></div>
     
-    <div class="bg-white shadow-lg rounded-lg w-full max-w-md p-8">
+    <div class="mt-4 bg-white shadow-lg rounded-lg w-full max-w-md p-8">
         <h2 class="text-center text-2xl font-semibold mb-4">Hospital Portal</h2>
         <div class="flex justify-between mb-6">
             <button id="login-tab" class="w-1/2 text-center py-2 font-bold border-b-2 border-blue-500 focus:outline-none" aria-selected="true">

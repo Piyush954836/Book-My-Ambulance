@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard - Book My Ambulance (BMA)</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body class="bg-gray-100">
@@ -54,6 +55,8 @@
                 </div>
             </div>
         </div>
+
+        <div id="bookingRequests"></div>
 
         <!-- Status Toggle Button with data attribute for isActive status -->
         <div class="text-center mb-8">
@@ -136,45 +139,85 @@
             });
         });
 
+        document.addEventListener("DOMContentLoaded", function () {
+            const button = document.getElementById("statusToggleButton");
+            const driverId = button.getAttribute("data-driver-id");  // Ensure driverId is fetched correctly
+        
+            const socket = io("http://localhost:3000"); // Adjust if hosted elsewhere
+        
+            socket.on("connect", () => {
+                console.log("Connected to socket server:", socket.id);
+                socket.emit("joinDriverRoom", driverId);  // Ensure driver joins the correct room
+            });
+        
+            socket.on("newBookingRequest", (data) => {
+                console.log("🚨 New Booking Request Received:", data);
+        
+                // Ensure the container exists
+                const bookingRequestsDiv = document.getElementById("bookingRequests");
+                if (!bookingRequestsDiv) {
+                    console.error("❌ ERROR: 'bookingRequests' div not found in the HTML.");
+                    return;
+                }
+        
+                const requestDiv = document.createElement("div");
+                requestDiv.innerHTML = `
+                    <p><strong>Patient:</strong> ${data.patientName}</p>
+                    <p><strong>Contact:</strong> ${data.patientMobile}</p>
+                    <p><strong>Location:</strong> ${data.latitude}, ${data.longitude}</p>
+                    <button onclick="acceptBooking('${data.bookingId}')">Accept</button>
+                    <button onclick="declineBooking('${data.bookingId}')">Decline</button>
+                `;
+                bookingRequestsDiv.appendChild(requestDiv);
+            });
+        
+            function acceptBooking(bookingId) {
+                console.log(`🚗 Accepting Booking: ${bookingId}`);
+                socket.emit("acceptBooking", { bookingId, driverId });
+        
+                alert("Booking Accepted! Redirecting to user map...");
+                window.location.href = `/driver-map?bookingId=${bookingId}`;
+            }
+        
+            // Send Live Location Every 10s
+            function sendLiveLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(position => {
+                        fetch("/driver/update-location", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                driverId,
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude
+                            })
+                        });
+                    }, error => {
+                        console.error("Error getting location:", error);
+                    });
+                } else {
+                    console.error("Geolocation is not supported by this browser.");
+                }
+            }
+        
+            setInterval(sendLiveLocation, 10000);
+        });
+        
+
+
+        socket.on('updateDriverStatus', (data) => {
+            if (data.driverId === driverId) {
+                isActive = data.isActive;
+                updateButton();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             const flashMessage = document.getElementById('flashMessage');
             if (flashMessage) {
                 setTimeout(() => {
                     flashMessage.style.opacity = 0;
                 }, 3000); // Hide the flash message after 3 seconds
-            }
-        });
-
-        let driverId = driver._id; // Replace this dynamically in your frontend
-
-        function sendLiveLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    fetch("/driver/update-location", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            driverId: driverId,
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        })
-                    });
-                }, error => {
-                    console.error("Error getting location:", error);
-                });
-            } else {
-                console.error("Geolocation is not supported by this browser.");
-            }
-        }
-
-        // Update location every 10 seconds
-        setInterval(sendLiveLocation, 10000);
-        const socket = io(); // Connect to the WebSocket server
-
-        socket.on('updateDriverStatus', (data) => {
-            if (data.driverId === driverId) {
-                isActive = data.isActive;
-                updateButton();
             }
         });
 

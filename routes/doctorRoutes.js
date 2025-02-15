@@ -10,6 +10,27 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// SEARCH DOCTOR
+router.get("/search", async (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) return res.json([]); 
+
+        const doctors = await Doctor.find({
+            $or: [
+                { fullName: { $regex: query, $options: "i" } },
+                { department: { $regex: query, $options: "i" } },
+                { hospital: { $regex: query, $options: "i" } }
+            ]
+        }).limit(10);
+
+        res.json(doctors);
+    } catch (error) {
+        console.error("Error searching doctors:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 // Doctor registration route
 router.post('/doctor-register', upload.single('profilePicture'), async (req, res) => {
     try {

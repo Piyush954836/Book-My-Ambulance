@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const Hospital = require("../models/Hospital");
 const Doctor = require("../models/Doctor");
 const Driver = require("../models/Driver");
+const ensureAuthenticated = require('../middleware/userLoggedIn');
+
 
 const router = express.Router();
 
@@ -32,8 +34,12 @@ router.post("/register", async (req, res) => {
       location: { latitude, longitude }
     });
 
+      // Fetch doctors for this hospital
+      const doctors = await Doctor.find({ hospital: existingHospital._id });
+      const drivers = await Driver.find({ hospital: existingHospital._id });
+  
     await newHospital.save();
-    res.render('hospital-dashboard', {hospital: newHospital});
+    res.render('hospital-dashboard', {hospital: newHospital, doctors, drivers});
   } catch (error) {
     res.status(500).json({ message: "Server Error!", error });
   }
@@ -71,5 +77,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/hospitals", ensureAuthenticated, async (req, res) => {
+  try {
+    const hospitals = await Hospital.find();
+    res.render("all-hospitals", { hospitals });
+  } catch (error) {
+    res.status(500).send("Error fetching hospitals");
+  }
+});
 
 module.exports = router;

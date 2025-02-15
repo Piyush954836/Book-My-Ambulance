@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospitals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.5/dist/cdn.min.js" defer></script>
+    <style>
+        /* Gradient Background Animation */
+        body {
+            background: linear-gradient(45deg, #6a11cb, #2575fc, #1dd1a1);
+            background-size: 400% 400%;
+            animation: gradientBG 8s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="p-6 min-h-screen flex flex-col items-center">
+
+    <div class="max-w-5xl w-full p-8 rounded-lg glass-card shadow-lg">
+        <h2 class="text-3xl font-bold text-center mb-6 text-white animate-pulse">🏥 Registered Hospitals</h2>
+
+        <!-- Search Bar -->
+        <input type="text" x-model="search" placeholder="🔍 Search hospitals..."
+            class="w-full p-3 text-lg border border-gray-300 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6"
+            x-data="{ search: '' }">
+
+        <!-- Hospital List -->
+        <ul class="space-y-6">
+            <% hospitals.forEach(hospital => { %>
+                <li x-show="search === '' || '<%= hospital.name %>'.toLowerCase().includes(search.toLowerCase()) || 
+                    '<%= hospital.address %>'.toLowerCase().includes(search.toLowerCase()) || 
+                    '<%= hospital.role %>'.toLowerCase().includes(search.toLowerCase()) || 
+                    '<%= hospital.responsiblePerson %>'.toLowerCase().includes(search.toLowerCase())"
+                    class="p-6 rounded-lg glass-card shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    
+                    <h3 class="text-2xl font-semibold text-white mb-2">🏨 <%= hospital.name %></h3>
+                    <p class="text-lg text-gray-200"><strong>📍 Address:</strong> <%= hospital.address %></p>
+                    <p class="text-lg text-gray-200"><strong>📞 Contact:</strong> <%= hospital.contact %></p>
+                    <p class="text-lg text-gray-200"><strong>✉️ Email:</strong> <%= hospital.email %></p>
+                    <p class="text-lg text-gray-200"><strong>👤 Responsible Person:</strong> <%= hospital.responsiblePerson %></p>
+                    <p class="text-lg text-gray-200"><strong>🛠 Role:</strong> <%= hospital.role %></p>
+                    <p class="text-sm text-gray-300 mt-2">📅 Registered on: <%= new Date(hospital.registeredAt).toLocaleDateString() %></p>
+                </li>
+            <% }) %>
+        </ul>
+    </div>
+
+</body>
+</html>

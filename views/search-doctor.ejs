@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Doctor - BMA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body class="bg-gray-100">
+    <div class="max-w-6xl mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-6">Find a Doctor</h1>
+
+        <!-- Search Bar -->
+        <div class="relative max-w-lg mx-auto">
+            <input type="text" id="searchInput" placeholder="Search by name, department, or hospital..."
+                class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button class="absolute right-2 top-2 text-gray-500" onclick="clearSearch()">✖</button>
+        </div>
+
+        <!-- Search Results -->
+        <div id="resultsContainer" class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
+
+    <script>
+        document.getElementById("searchInput").addEventListener("input", function () {
+            const query = this.value.trim();
+            if (query.length === 0) {
+                document.getElementById("resultsContainer").innerHTML = "";
+                return;
+            }
+
+            axios.get(`/doctor/search?q=${query}`)
+                .then(response => {
+                    const resultsContainer = document.getElementById("resultsContainer");
+                    resultsContainer.innerHTML = "";
+                    response.data.forEach(doctor => {
+                        const doctorCard = `
+                            <div class="bg-white p-4 rounded-lg shadow-md">
+                                <img src="${doctor.profilePicture ? `/uploads/${doctor.profilePicture}` : '/default-avatar.png'}"
+                                    alt="Doctor Image" class="w-24 h-24 rounded-full mx-auto">
+                                <h2 class="text-xl font-semibold text-center mt-2">${doctor.fullName}</h2>
+                                <p class="text-center text-gray-600">${doctor.department}</p>
+                                <p class="text-center text-gray-500">${doctor.hospital}</p>
+                            </div>
+                        `;
+                        resultsContainer.innerHTML += doctorCard;
+                    });
+                })
+                .catch(error => console.error("Error fetching doctors:", error));
+        });
+
+        function clearSearch() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("resultsContainer").innerHTML = "";
+        }
+    </script>
+</body>
+
+</html>

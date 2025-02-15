@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body class="bg-gray-50">
@@ -59,39 +60,47 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
                     const bookingData = {
-                        driverId: selectedDriverId, // Only this driver
+                        driverId: selectedDriverId,
                         patientName,
                         patientMobile,
                         latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
+                        longitude: position.coords.longitude,
+                        status: "pending"
                     };
         
-                    fetch('/book-ambulance', {
+                    console.log("Booking Data:", bookingData); // ✅ Log before sending
+        
+                    fetch('/book/book-ambulance', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(bookingData)
                     })
                     .then(response => response.json())
                     .then(data => {
+                        console.log("Response from Server:", data); // ✅ Log response
                         if (data.success) {
-                            alert("Ambulance booked successfully! Redirecting to live tracking...");
-        
-                            // Redirect to tracking page with only the selected driver
-                            window.location.href = `/user-map?driverId=${selectedDriverId}&lat=${position.coords.latitude}&lng=${position.coords.longitude}`;
+                            alert("Booking request sent to driver! Please wait for confirmation.");
                         } else {
                             alert("Failed to book ambulance. Please try again.");
                         }
                     })
-                    .catch(error => console.error("Error:", error));
+                    .catch(error => console.error("Fetch Error:", error)); // ✅ Log any fetch errors
                 }, error => {
                     alert("Unable to fetch location. Please enable location services.");
-                    console.error(error);
+                    console.error("Geolocation Error:", error);
                 });
             } else {
                 alert("Geolocation is not supported by this browser.");
             }
         });
         
+        
+        const socket = io();
+
+        socket.on("bookingAccepted", (data) => {
+            alert("Your ambulance is on the way!");
+            window.location.href = `/user-map?bookingId=${data.bookingId}`;
+        });
         
         function fetchDrivers() {
             fetch("/driver/emergency-data")
