@@ -7,22 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.5/dist/cdn.min.js" defer></script>
     <style>
-        /* Gradient Background Animation */
+        /* Static Background Color */
         body {
-            background: linear-gradient(45deg, #6a11cb, #2575fc, #1dd1a1);
-            background-size: 400% 400%;
-            animation: gradientBG 8s ease infinite;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: #1e3a8a; /* Dark Blue */
         }
 
         /* Glassmorphism Effect */
         .glass-card {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border-radius: 15px;
@@ -39,7 +31,7 @@
 <body class="p-6 min-h-screen flex flex-col items-center">
 
     <div class="max-w-5xl w-full p-8 rounded-lg glass-card shadow-lg">
-        <h2 class="text-3xl font-bold text-center mb-6 text-white animate-pulse">🏥 Registered Hospitals</h2>
+        <h2 class="text-3xl font-bold text-center mb-6 text-white">🏥 Registered Hospitals</h2>
 
         <!-- Search Bar -->
         <input type="text" x-model="search" placeholder="🔍 Search hospitals..."
@@ -61,6 +53,11 @@
                     <p class="text-lg text-gray-200"><strong>✉️ Email:</strong> <%= hospital.email %></p>
                     <p class="text-lg text-gray-200"><strong>👤 Responsible Person:</strong> <%= hospital.responsiblePerson %></p>
                     <p class="text-lg text-gray-200"><strong>🛠 Role:</strong> <%= hospital.role %></p>
+                    
+                    <!-- 🏥 Hospital Beds Info -->
+                    <p class="text-lg text-gray-200"><strong>🛏 Total Beds:</strong> <%= hospital.totalBeds || 'N/A' %></p>
+                    <p class="text-lg text-gray-200"><strong>✅ Available Beds:</strong> <%= hospital.availableBeds || 'N/A' %></p>
+
                     <p class="text-sm text-gray-300 mt-2">📅 Registered on: <%= new Date(hospital.registeredAt).toLocaleDateString() %></p>
                 </li>
             <% }) %>

@@ -79,17 +79,29 @@ io.on("connection", (socket) => {
     });
 
     // Notify driver when a new booking is assigned
-    socket.on("acceptBooking", async ({ bookingId, driverId }) => {
-        try {
-            await Booking.findByIdAndUpdate(bookingId, { status: "accepted" });
-
-            // Emit the notification **only** to the specific driver
-            io.to(driverId).emit("bookingAccepted", { bookingId });
-
-        } catch (error) {
-            console.error("Error accepting booking:", error);
+    socket.on("acceptBooking", ({ bookingId, driverId }) => {
+        console.log("📥 Accept Booking Request Received:");
+        console.log("📌 Driver ID:", driverId);
+        console.log("📌 Booking ID:", bookingId);
+    
+        // Validate Driver ID
+        if (!driverId || driverId.length !== 24) {
+            console.error("❌ ERROR: Invalid Driver ID received:", driverId);
+            return;
         }
+    
+        // Validate Booking ID
+        if (!bookingId || bookingId.length !== 24) {
+            console.error("❌ ERROR: Invalid Booking ID received:", bookingId);
+            return;
+        }
+    
+        console.log(`✅ Booking ${bookingId} accepted by Driver ${driverId}`);
+    
+        // Notify the user that the driver accepted the request
+        io.to(driverId).emit("bookingAccepted", { driverId, bookingId });
     });
+    
 
     // Notify driver when appointment is updated
     socket.on("updateAppointment", async ({ appointmentId, status, doctorId }) => {

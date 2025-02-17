@@ -8,6 +8,8 @@ const hospitalSchema = new mongoose.Schema({
   role: { type: String, enum: ["Operation Manager", "Trauma Center Head"], required: true },
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+  totalBeds: {type: String},
+  availableBeds: {type: String},
   location: { 
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }

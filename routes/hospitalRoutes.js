@@ -77,6 +77,42 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post('/update-beds', async (req, res) => {
+  try {
+      const { totalBeds, availableBeds } = req.body;
+
+      // Ensure availableBeds is not greater than totalBeds
+      const sanitizedTotalBeds = parseInt(totalBeds, 10);
+      let sanitizedAvailableBeds = parseInt(availableBeds, 10);
+
+      if (sanitizedAvailableBeds > sanitizedTotalBeds) {
+          sanitizedAvailableBeds = sanitizedTotalBeds;
+      }
+
+      // Find the logged-in hospital (Assuming hospitalId is stored in session)
+      const hospital = await Hospital.findById(req.session.hospitalId);
+      if (!hospital) {
+          return res.status(404).send('Hospital not found');
+      }
+
+      // Update hospital bed data
+      hospital.totalBeds = sanitizedTotalBeds;
+      hospital.availableBeds = sanitizedAvailableBeds;
+      await hospital.save();
+
+      // Fetch doctors and drivers for this hospital
+      const doctors = await Doctor.find({ hospital: hospital._id });
+      const drivers = await Driver.find({ hospital: hospital._id });
+
+      // Render the dashboard with updated data
+      res.render('hospital-dashboard', { hospital, doctors, drivers });
+  } catch (error) {
+      console.error('Error updating beds:', error);
+      res.status(500).send('Server error');
+  }
+});
+
+
 router.get("/hospitals", ensureAuthenticated, async (req, res) => {
   try {
     const hospitals = await Hospital.find();

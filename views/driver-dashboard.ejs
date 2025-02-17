@@ -138,22 +138,20 @@
                 }
             });
         });
-
         document.addEventListener("DOMContentLoaded", function () {
             const button = document.getElementById("statusToggleButton");
-            const driverId = button.getAttribute("data-driver-id");  // Ensure driverId is fetched correctly
+            const driverId = button.getAttribute("data-driver-id"); // Ensure driverId is correctly fetched
         
             const socket = io("http://localhost:3000"); // Adjust if hosted elsewhere
         
             socket.on("connect", () => {
                 console.log("Connected to socket server:", socket.id);
-                socket.emit("joinDriverRoom", driverId);  // Ensure driver joins the correct room
+                socket.emit("joinDriverRoom", driverId); // Ensure driver joins the correct room
             });
         
             socket.on("newBookingRequest", (data) => {
                 console.log("🚨 New Booking Request Received:", data);
         
-                // Ensure the container exists
                 const bookingRequestsDiv = document.getElementById("bookingRequests");
                 if (!bookingRequestsDiv) {
                     console.error("❌ ERROR: 'bookingRequests' div not found in the HTML.");
@@ -161,23 +159,57 @@
                 }
         
                 const requestDiv = document.createElement("div");
+                requestDiv.className = "bg-white shadow-lg rounded-lg p-4 border border-gray-200 w-full max-w-md mx-auto my-4 transition-transform hover:scale-105";
+                
                 requestDiv.innerHTML = `
-                    <p><strong>Patient:</strong> ${data.patientName}</p>
-                    <p><strong>Contact:</strong> ${data.patientMobile}</p>
-                    <p><strong>Location:</strong> ${data.latitude}, ${data.longitude}</p>
-                    <button onclick="acceptBooking('${data.bookingId}')">Accept</button>
-                    <button onclick="declineBooking('${data.bookingId}')">Decline</button>
+                    <h3 class="text-lg font-semibold text-gray-800">🚑 New Booking Request</h3>
+                    <p class="text-gray-600 mt-2"><strong>Patient:</strong> ${data.patientName}</p>
+                    <p class="text-gray-600"><strong>Contact:</strong> ${data.patientMobile}</p>
+                    <p class="text-gray-600"><strong>Location:</strong> ${data.latitude}, ${data.longitude}</p>
+                
+                    <div class="flex justify-between mt-4">
+                        <button class="accept-btn bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600 transition duration-300" data-booking-id="${data.bookingId}">
+                            ✅ Accept
+                        </button>
+                        <button class="decline-btn bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition duration-300" data-booking-id="${data.bookingId}">
+                            ❌ Decline
+                        </button>
+                    </div>
                 `;
+                
                 bookingRequestsDiv.appendChild(requestDiv);
+        
+                // Attach event listener dynamically to Accept buttons
+                requestDiv.querySelector(".accept-btn").addEventListener("click", function () {
+                    acceptBooking(this.getAttribute("data-booking-id"));
+                });
             });
-        
             function acceptBooking(bookingId) {
-                console.log(`🚗 Accepting Booking: ${bookingId}`);
+                const driverId = button.getAttribute("data-driver-id");
+            
+                console.log("🚗 Accepting Booking:");
+                console.log("📌 Driver ID:", driverId);
+                console.log("📌 Booking ID:", bookingId);
+            
+                if (!driverId || driverId === "driver-map") {
+                    console.error("❌ ERROR: Invalid driver ID received.");
+                    return;
+                }
+            
+                if (!bookingId || bookingId === "driver-map") {
+                    console.error("❌ ERROR: Invalid booking ID received.");
+                    return;
+                }
+            
+                // Send acceptBooking event
                 socket.emit("acceptBooking", { bookingId, driverId });
-        
+            
                 alert("Booking Accepted! Redirecting to user map...");
-                window.location.href = `/driver-map?bookingId=${bookingId}`;
+                window.location.href = `/driver/driver-map?bookingId=${bookingId}&driverId=${driverId}`;
             }
+            
+            
+        
         
             // Send Live Location Every 10s
             function sendLiveLocation() {

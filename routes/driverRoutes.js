@@ -249,6 +249,96 @@ router.get("/:id", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+let userLocation = { lat: 0, lng: 0 };
+let driverLocations = {}; // Store driver locations by driver ID
+
+// ✅ Render the driver map page
+router.get("/driver-map", async (req, res) => {
+    try {
+        const { bookingId } = req.query;
+        const driverId = req.session.driverId; // Retrieve driverId from session
+
+        if (!driverId || !ObjectId.isValid(driverId)) {
+            console.error("❌ ERROR: Invalid Driver ID:", driverId);
+            return res.status(400).send("Invalid Driver ID");
+        }
+
+        res.render("driver-map", { driverId, bookingId: bookingId || null });
+    } catch (error) {
+        console.error("❌ ERROR rendering driver-map:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// ✅ API to fetch user's location
+router.get("/get-user-location", (req, res) => {
+    res.json(userLocation);
+});
+
+// ✅ API to update driver location via fetch (Live Tracking)
+router.post("/update-location", (req, res) => {
+    try {
+        const { driverId, latitude, longitude } = req.body;
+
+        if (!driverId || !ObjectId.isValid(driverId)) {
+            return res.status(400).json({ error: "Invalid Driver ID" });
+        }
+
+        driverLocations[driverId] = { lat: latitude, lng: longitude };
+        console.log(`📍 Live Driver ${driverId} updated location:`, { latitude, longitude });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error("❌ ERROR updating driver location:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// ✅ API to simulate updating user location (for testing)
+router.post("/update-user-location", (req, res) => {
+    const { lat, lng } = req.body;
+    userLocation = { lat, lng };
+    console.log("📍 User location updated:", userLocation);
+
+    res.json({ success: true });
+});
+
+router.post("/accept-booking", (req, res) => {
+    try {
+        let { driverId, bookingId } = req.body;
+
+        if (!driverId) {
+            driverId = req.session.driverId; // Ensure driverId is retrieved from session if missing
+        }
+
+        if (!driverId || !ObjectId.isValid(driverId)) {
+            console.error("❌ ERROR: Invalid Driver ID:", driverId);
+            return res.status(400).json({ error: "Invalid Driver ID" });
+        }
+
+        if (!bookingId || !ObjectId.isValid(bookingId)) {
+            console.error("❌ ERROR: Invalid Booking ID received:", bookingId);
+            return res.status(400).json({ error: "Invalid Booking ID" });
+        }
+
+        console.log(`✅ Driver ${driverId} accepted booking: ${bookingId}`);
+
+        // Emit event to notify user
+        const io = req.app.get("socketio");
+        io.to(driverId).emit("bookingAccepted", { driverId, bookingId });
+
+        res.json({ 
+            success: true, 
+            redirectUrl: `/driver/driver-map?bookingId=${bookingId}&driverId=${driverId}` // ✅ Now includes driverId
+        });
+    } catch (error) {
+        console.error("❌ ERROR accepting booking:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
 
 
 module.exports = router;
