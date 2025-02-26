@@ -111,6 +111,38 @@
                     </div>
                 </form>
 
+                <form method="get" action="/doctor">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden p-5">
+                        <img src="/images/pediatrician.jpg" alt="Orthopedic" class="w-full h-40 rounded-lg object-cover">
+                        <div class="p-4">
+                            <h3 class="text-2xl font-semibold mb-4">Pediatrician</h3>
+                            <p class="text-gray-600">Top pediatricians providing expert care for children, treating a wide range of health issues from infancy through adolescence.</p>
+                        </div>
+                        <!-- Hidden field to pass the department -->
+                        <input type="hidden" name="department" value="pediatrician">
+                        <button type="submit"
+                            class="px-3 w-40 py-2 bg-blue-700 text-white shadow-lg rounded-lg hover:shadow-xl transition mt-2">
+                            Available Doctors
+                        </button>
+                    </div>
+                </form>
+
+                <form method="get" action="/doctor">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden p-5">
+                        <img src="/images/ENT.jpg" alt="ENT" class="w-full h-40 rounded-lg object-cover">
+                        <div class="p-4">
+                            <h3 class="text-2xl font-semibold mb-4">ENT Specialist</h3>
+                            <p class="text-gray-600">Top ENT specialists for comprehensive ear, nose, and throat care, addressing a wide range of ENT-related health concerns.</p>
+                        </div>
+                        <!-- Hidden field to pass the department -->
+                        <input type="hidden" name="department" value="ent">
+                        <button type="submit"
+                            class="px-3 w-40 py-2 bg-blue-700 text-white shadow-lg rounded-lg hover:shadow-xl transition mt-2">
+                            Available Doctors
+                        </button>
+                    </div>
+                </form>
+
                 <!-- Neurologist -->
                 <form method="get" action="/doctor">
                     <div class="bg-white shadow-lg rounded-lg overflow-hidden p-5">

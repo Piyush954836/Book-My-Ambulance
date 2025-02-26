@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
+const Doctor = require('../models/Doctor');
 const Appointment = require("../models/Appointment");
 const ensureAuthenticated = require('../middleware/userLoggedIn');
 const mongoose = require("mongoose");
@@ -96,6 +97,51 @@ router.get("/:userId/appointments", async (req, res) => {
     } catch (error) {
         console.error("Error fetching appointments:", error);
         res.status(500).json({ error: "Server error" });
+    }
+});
+
+router.get('/doctors', ensureAuthenticated, async (req, res) => {
+    try {
+        console.log("Session UserID:", req.session.userId); // Debugging
+
+        const { department, searchQuery } = req.query;
+        let doctors;
+
+        const searchConditions = {};
+
+        // If a department filter is provided, add it to the query
+        if (department) {
+            searchConditions.department = department;
+        }
+
+        // If a search query is provided, add it to the query to filter by name, department, or hospital
+        if (searchQuery) {
+            const searchRegex = new RegExp(searchQuery, 'i'); // Case-insensitive search
+
+            searchConditions.$or = [
+                { fullName: searchRegex },  // Search by doctor's name
+                { department: searchRegex }, // Search by department
+                { 'hospital.name': searchRegex } // Search by hospital name
+            ];
+        }
+
+        // Fetch doctors based on the search conditions
+        doctors = await Doctor.find(searchConditions);
+
+        if (!doctors || doctors.length === 0) {
+            return res.status(404).send('No doctors found');
+        }
+
+        // Fetch user details from database using userId stored in session
+        let user = null;
+        if (req.session.userId) {
+            user = await User.findById(req.session.userId);
+        }
+
+        res.render('available-doctor', { user, doctors, department, searchQuery }); // Pass searchQuery along with other variables
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
     }
 });
 

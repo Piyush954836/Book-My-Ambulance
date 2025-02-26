@@ -26,6 +26,7 @@
                     <a href="/about" class="hover:text-blue-500">About Us</a>
                     <a href="/safety" class="hover:text-blue-500">Safety</a>
                     <a href="/hospital/hospitals" class="hover:text-blue-500">Hospital</a>
+                    <a href="/user/doctors" class="hover:text-blue-500">Doctors</a>
                     <a href="/user/dashboard" class="hover:text-blue-500">Dashboard</a>
                     <% if (user) { %>
                         <a href="/logout"
@@ -50,6 +51,7 @@
             <a href="/about" class="block py-2 hover:text-blue-500">About Us</a>
             <a href="/safety" class="block py-2 hover:text-blue-500">Safety</a>
             <a href="/hospital/hospitals" class="block py-2 hover:text-blue-500">Hospitals</a>
+            <a href="/user/doctors" class="block py-2 hover:text-blue-500">Doctors</a>
             <a href="/user/dashboard" class="block py-2 hover:text-blue-500">Dashboard</a>
             <% if (user) { %>
                 <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600">Logout</a>
@@ -81,6 +83,8 @@
 
     <!-- Overlay (for closing menu when clicking outside) -->
     <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden"></div>
+
+    <!-- Add this inside the Navbar section -->
 
     <section id="background-slideshow"
     class="bg-blue-600 text-white py-40 md:py-60 text-center h-screen relative overflow-hidden">

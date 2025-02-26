@@ -21,6 +21,14 @@
                         <% } %>
         </h1>
 
+        <div class="container mx-auto mt-10 mb-8">
+            <form id="search-form" class="flex items-center">
+                <input type="text" id="search-query" name="searchQuery" class="w-full px-4 py-2 border rounded-md" placeholder="Search doctors by name, department, or hospital..." />
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2 hover:bg-blue-600">
+                    Search
+                </button>
+            </form>
+        </div>
         <!-- Doctors List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <% doctors.forEach(doctor=> { %>
@@ -101,6 +109,33 @@
     </footer>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const searchForm = document.getElementById("search-form");
+            const searchQuery = document.getElementById("search-query");
+            const doctorList = document.getElementById("doctor-list");
+            const doctorItems = Array.from(doctorList.getElementsByClassName("doctor-item"));
+        
+            // Filter doctors based on the search query
+            searchForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const query = searchQuery.value.toLowerCase();
+        
+                doctorItems.forEach(doctorItem => {
+                    const doctorName = doctorItem.querySelector("h2").textContent.toLowerCase();
+                    const department = doctorItem.querySelector(".text-gray-600").textContent.toLowerCase();
+                    const hospital = doctorItem.querySelector(".text-gray-700").textContent.toLowerCase();
+        
+                    // Show or hide doctors based on the query
+                    if (doctorName.includes(query) || department.includes(query) || hospital.includes(query)) {
+                        doctorItem.style.display = "block"; // Show doctor
+                    } else {
+                        doctorItem.style.display = "none"; // Hide doctor
+                    }
+                });
+            });
+        });
+        
+
         document.addEventListener("DOMContentLoaded", () => {
             const modal = document.getElementById("modal");
             const doctorNameElem = document.getElementById("doctor-name");

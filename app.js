@@ -27,7 +27,7 @@ const io = socketIo(server, { cors: { origin: "*" } });
 
 // Main database connection
 const { connectDB } = require('./utils/mainDB'); 
-connectDB(process.env.MONGODB_URI); 
+connectDB(); 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

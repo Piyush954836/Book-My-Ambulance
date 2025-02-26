@@ -112,6 +112,18 @@ router.post('/update-beds', async (req, res) => {
   }
 });
 
+// 🔹 Hospital Logout Route
+router.get("/logout", (req, res) => {
+  // Destroy the session to log the hospital out
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Error logging out" });
+    }
+    // Redirect to the login page after logout
+    res.redirect("/");  // Adjust the path as needed
+  });
+});
+
 
 router.get("/hospitals", ensureAuthenticated, async (req, res) => {
   try {
