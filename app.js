@@ -19,6 +19,7 @@ const socketIo = require("socket.io");
 const flash = require('connect-flash');
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const cron = require("node-cron");
+const MongoStore = require("connect-mongo");
 const mongoose = require("mongoose");
 require('dotenv').config();
 

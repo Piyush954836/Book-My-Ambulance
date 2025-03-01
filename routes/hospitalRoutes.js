@@ -33,14 +33,15 @@ router.post("/register", async (req, res) => {
       password: hashedPassword,
       location: { latitude, longitude }
     });
+    await newHospital.save();
 
       // Fetch doctors for this hospital
-      const doctors = await Doctor.find({ hospital: existingHospital._id });
-      const drivers = await Driver.find({ hospital: existingHospital._id });
+      const doctors = await Doctor.find({ hospital: newHospital._id });
+      const drivers = await Driver.find({ hospital: newHospital._id });
   
-    await newHospital.save();
     res.render('hospital-dashboard', {hospital: newHospital, doctors, drivers});
   } catch (error) {
+    console.error("Registration Error:", error);
     res.status(500).json({ message: "Server Error!", error });
   }
 });
