@@ -5,6 +5,7 @@ const Driver = require('../models/Driver');
 const Hospital = require('../models/Hospital'); // Import Hospital model
 const multer = require('multer');
 const mongoose = require('mongoose');
+const { ObjectId } = require('mongoose').Types;
 
 // Configure Multer for memory storage
 const storage = multer.memoryStorage();
@@ -228,40 +229,22 @@ router.get("/emergency-data", async (req, res) => {
     }
 });
 
-
-router.get("/:id", async (req, res) => {
-    try {
-        console.log("Received ID:", req.params.id);
-
-        const driverId = req.params.id;
-
-        if (!mongoose.Types.ObjectId.isValid(driverId)) {
-            console.log("Invalid ObjectId:", driverId);
-            return res.status(400).send("Invalid driver ID");
-        }
-
-        const driver = await Driver.findById(driverId);
-        if (!driver) return res.status(404).send("Driver not found");
-
-        res.render("available-driver", { drivers: driver });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal Server Error");
-    }
-});
-let userLocation = { lat: 0, lng: 0 };
-let driverLocations = {}; // Store driver locations by driver ID
-
 // ✅ Render the driver map page
 router.get("/driver-map", async (req, res) => {
     try {
-        const { bookingId } = req.query;
-        const driverId = req.session.driverId; // Retrieve driverId from session
+         let { bookingId, driverId } = req.query;
+
+        if (!driverId) {
+            driverId = req.session.driverId; // Fallback to session if not in query
+        } // Retrieve driverId from session
+        
+
+        console.log("📦 driverId:", driverId, "Valid:", ObjectId.isValid(driverId));
 
         if (!driverId || !ObjectId.isValid(driverId)) {
             console.error("❌ ERROR: Invalid Driver ID:", driverId);
             return res.status(400).send("Invalid Driver ID");
-        }
+        }   
 
         res.render("driver-map", { driverId, bookingId: bookingId || null });
     } catch (error) {
@@ -269,6 +252,61 @@ router.get("/driver-map", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
+router.post("/accept-booking", (req, res) => {
+    try {
+        const driverId = req.query.driverId || req.session.driverId;
+        const bookingId = req.query.bookingId;
+
+        if (!driverId || !ObjectId.isValid(driverId)) {
+            console.error("❌ ERROR: Invalid Driver ID:", driverId);
+            return res.status(400).json({ error: "Invalid Driver ID" });
+        }
+
+        if (!bookingId || !ObjectId.isValid(bookingId)) {
+            console.error("❌ ERROR: Invalid Booking ID received:", bookingId);
+            return res.status(400).json({ error: "Invalid Booking ID" });
+        }
+
+        console.log(`✅ Driver ${driverId} accepted booking: ${bookingId}`);
+
+        // Emit event to notify user
+        const io = req.app.get("socketio");
+        io.to(driverId).emit("bookingAccepted", { driverId, bookingId });
+
+        res.json({ 
+            success: true, 
+            redirectUrl: `/driver/map?bookingId=${bookingId}&driverId=${driverId}` // ✅ Now includes driverId
+        });
+    } catch (error) {
+        console.error("❌ ERROR accepting booking:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+// router.get("/:id", async (req, res) => {
+//     try {
+//         console.log("Received IDs:", req.params.id);
+
+//         const driverId = req.params.id;
+
+//         if (!mongoose.Types.ObjectId.isValid(driverId)) {
+//             console.log("Invalid ObjectId:", driverId);
+//             return res.status(400).send("Invalid driver ID");
+//         }
+
+//         const driver = await Driver.findById(driverId);
+//         if (!driver) return res.status(404).send("Driver not found");
+
+//         res.render("available-driver", { drivers: driver });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send("Internal Server Error");
+//     }
+// });
+let userLocation = { lat: 0, lng: 0 };
+let driverLocations = {}; // Store driver locations by driver ID
 
 // ✅ API to fetch user's location
 router.get("/get-user-location", (req, res) => {
@@ -302,41 +340,6 @@ router.post("/update-user-location", (req, res) => {
 
     res.json({ success: true });
 });
-
-router.post("/accept-booking", (req, res) => {
-    try {
-        let { driverId, bookingId } = req.body;
-
-        if (!driverId) {
-            driverId = req.session.driverId; // Ensure driverId is retrieved from session if missing
-        }
-
-        if (!driverId || !ObjectId.isValid(driverId)) {
-            console.error("❌ ERROR: Invalid Driver ID:", driverId);
-            return res.status(400).json({ error: "Invalid Driver ID" });
-        }
-
-        if (!bookingId || !ObjectId.isValid(bookingId)) {
-            console.error("❌ ERROR: Invalid Booking ID received:", bookingId);
-            return res.status(400).json({ error: "Invalid Booking ID" });
-        }
-
-        console.log(`✅ Driver ${driverId} accepted booking: ${bookingId}`);
-
-        // Emit event to notify user
-        const io = req.app.get("socketio");
-        io.to(driverId).emit("bookingAccepted", { driverId, bookingId });
-
-        res.json({ 
-            success: true, 
-            redirectUrl: `/driver/driver-map?bookingId=${bookingId}&driverId=${driverId}` // ✅ Now includes driverId
-        });
-    } catch (error) {
-        console.error("❌ ERROR accepting booking:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
 
 
 

@@ -334,6 +334,19 @@ app.get("/get-locations", async (req, res) => {
     });
 });
 
+app.get('/get-user-location', (req, res) => {
+    const location = req.session.userLocation;
+    
+    if (location) {
+        res.json({
+            lat: location.latitude,
+            lng: location.longitude
+        });
+    } else {
+        res.status(404).json({ message: 'User location not found' });
+    }
+});
+
 // Emergency Button Route
 app.get('/emergency', (req, res) => {
     if (!req.session.userLocation) {
